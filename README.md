@@ -17,14 +17,14 @@ project
 |  |- config.db
 |
 |- script/
-|  |- check_stock.py
+|  |- check_stock.py (moved to stockalertjob)
 |
 |- web/
 |  |- index.html
 |  |- app.js
 |
 |- .github/workflows/
-|  |- check_stock.yml
+|  |- check_stock.yml (moved to stockalertjob)
 |
 |- requirements.txt
 ```
@@ -68,19 +68,3 @@ Payload format:
 Open `web/index.html` in your browser.
 
 If frontend and backend are on different domains, configure reverse proxy or CORS.
-
-## 5. GitHub Actions Secrets
-
-Set repository secrets:
-- `CONFIG_API_URL`: Your PythonAnywhere config API URL, e.g. `https://your-domain.pythonanywhere.com/api/config`
-- `LINE_TOKEN`: Your LINE Messaging API channel access token
-
-Workflow file: `.github/workflows/check_stock.yml`
-
-## 6. Test checker script locally
-
-```bash
-set CONFIG_API_URL=https://your-domain.pythonanywhere.com/api/config
-set LINE_TOKEN=your_line_token
-python script/check_stock.py
-```
