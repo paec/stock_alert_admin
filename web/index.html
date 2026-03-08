@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Alert Settings</title>
+    <script src="https://unpkg.com/vue@3"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 720px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      label {
+        display: block;
+        margin-top: 12px;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        margin-top: 16px;
+        padding: 8px 12px;
+      }
+      .stock-row {
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h2>Stock Alert Settings</h2>
+
+      <h3>Rules</h3>
+
+      <div class="stock-row" v-for="(rule, i) in rules" :key="`rule-${i}`">
+        <label :for="`symbol-${i}`">Symbol</label>
+        <input :id="`symbol-${i}`" v-model="rule.symbol" placeholder="AAPL or 2330.TW" />
+
+        <label :for="`days-${i}`">X Days</label>
+        <input :id="`days-${i}`" type="number" min="1" v-model.number="rule.x_days" />
+
+        <label :for="`percent-${i}`">Drop %</label>
+        <input :id="`percent-${i}`" type="number" min="0" step="0.1" v-model.number="rule.y_percent" />
+      </div>
+
+      <button @click="addRule">Add</button>
+      <button @click="save">Save</button>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
