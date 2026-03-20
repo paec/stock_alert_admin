@@ -1,227 +1,70 @@
-# StockAlertAdmin
+# Stock Alert Admin MVP
 
-StockAlertAdmin is the admin-side service for StockAlertJob.
-It provides:
-- A Flask API to read and update stock alert rules.
-- A lightweight web UI to edit those rules.
-- Helper scripts for PythonAnywhere deployment and GitHub Actions dispatch.
-
-## Contract Alignment With StockAlertJob
-
-StockAlertJob current config contract (already in use) includes two parts:
-
-1. `rules` list: per-symbol short-term drop trigger
-2. `long_term_drop` object: global long-term drop trigger
-
-Expected JSON shape:
-
-```json
-{
-  "long_term_drop": {
-    "days": 60,
-    "drop_percent": 10
-  },
-  "rules": [
-    {
-      "symbol": "VOO",
-      "x_days": 5,
-      "y_percent": 5
-    }
-  ]
-}
-```
-
-Status: implemented in StockAlertAdmin backend and web UI.
-
-## Relationship to StockAlertJob
-
-- StockAlertJob already contains the alert execution logic.
-- StockAlertAdmin is responsible for managing:
-  - Per-symbol rule source (`symbol`, `x_days`, `y_percent`)
-  - Global long-term settings (`long_term_drop.days`, `long_term_drop.drop_percent`)
-- StockAlertJob calls StockAlertAdmin API (`GET /api/config`) to load both sections before running checks.
+A minimal project skeleton:
+- `backend/`: Flask API + SQLite config store (`stock_config` table)
+- `script/`: Scheduled stock checker for GitHub Actions
+- `web/`: Vue 3 progressive frontend (CDN, no build step)
 
 ## Project Structure
 
 ```text
-StockAlertAdmin/
-  backend/
-    app.py          # Flask API
-    init_db.py      # SQLite schema + seed data
-    models.py       # DB connection helper
-    wsgi.py         # PythonAnywhere WSGI entrypoint
-  web/
-    index.html      # Vue-based admin page
-    app.js          # Frontend logic for /api/config
-  execJob.py        # Trigger StockAlertJob GitHub Actions workflow
-  pythonanywhere_prepare.py   # One-shot deployment setup helper
-  requirements.txt
+project
+|
+|- backend/
+|  |- app.py
+|  |- models.py
+|  |- init_db.py
+|  |- config.db
+|
+|- script/
+|  |- check_stock.py (moved to stockalertjob)
+|
+|- web/
+|  |- index.html
+|  |- app.js
+|
+|- .github/workflows/
+|  |- check_stock.yml (moved to stockalertjob)
+|
+|- requirements.txt
 ```
 
-## Requirements
+## 1. Install dependencies
 
-- Python 3.10+ (recommended)
-- pip
-
-Install dependencies:
-
-```powershell
+```bash
 pip install -r requirements.txt
 ```
 
-## Local Setup
+## 2. Initialize database
 
-1. Initialize database:
-
-```powershell
+```bash
 python backend/init_db.py
 ```
 
-2. Start API server (from `backend` folder):
+## 3. Run Flask API locally
 
-```powershell
-cd backend
-python app.py
+```bash
+python backend/app.py
 ```
 
-Default Flask dev server URL:
+API:
+- `GET /api/config`
+- `POST /api/config`
 
-```text
-http://127.0.0.1:5000
-```
-
-## API
-
-### GET /api/config
-
-Returns all config used by StockAlertJob.
-
-Response example:
+Payload format:
 
 ```json
 {
-  "long_term_drop": {
-    "days": 60,
-    "drop_percent": 10
-  },
-  "rules": [
-    {
-      "symbol": "MSFT",
-      "x_days": 5,
-      "y_percent": 5.0
-    }
-  ]
+	"rules": [
+		{ "symbol": "MSFT", "x_days": 5, "y_percent": 5 },
+		{ "symbol": "TSLA", "x_days": 3, "y_percent": 5 },
+		{ "symbol": "APPL", "x_days": 30, "y_percent": 3 }
+	]
 }
 ```
 
-### POST /api/config
+## 4. Frontend
 
-Replaces all config with payload data.
+Open `web/index.html` in your browser.
 
-Request body:
-
-```json
-{
-  "long_term_drop": {
-    "days": 60,
-    "drop_percent": 10
-  },
-  "rules": [
-    {
-      "symbol": "AAPL",
-      "x_days": 3,
-      "y_percent": 4.5
-    }
-  ]
-}
-```
-
-Validation notes:
-- `rules` must be a list.
-- Each item must include `symbol`, `x_days`, `y_percent`.
-- `symbol` is normalized to uppercase.
-- `x_days` is converted to integer.
-- `y_percent` is converted to float.
-- `long_term_drop.days` must be positive integer.
-- `long_term_drop.drop_percent` must be positive number.
-
-Success response:
-
-```json
-{
-  "status": "ok"
-}
-```
-
-Error response:
-
-```json
-{
-  "status": "error",
-  "message": "Invalid payload"
-}
-```
-
-## Admin Web UI
-
-The admin UI is in `web/index.html` and uses Vue (CDN).
-It calls:
-- `GET /api/config` on page load.
-- `POST /api/config` on save.
-
-In production, serve `web/` and reverse-proxy `/api/*` to Flask backend.
-
-## PythonAnywhere Deployment
-
-Run one-shot preparation script:
-
-```powershell
-python pythonanywhere_prepare.py
-```
-
-This script:
-- Upgrades pip
-- Installs dependencies
-- Initializes SQLite DB
-- Writes `backend/wsgi.py`
-
-Then in PythonAnywhere Web tab:
-- Point WSGI config to `backend/wsgi.py`
-- Reload web app
-- Test `/api/config`
-
-Debug mode behavior
--------------------
-
-The Flask debug server is enabled by default when running `python app.py` locally. This is controlled by the environment variable `STOCKALERT_DEBUG`:
-
-- Default (local): `STOCKALERT_DEBUG=true` → debug enabled.
-- Production: set `STOCKALERT_DEBUG=false` → debug disabled.
-
-On PythonAnywhere you can set the environment variable in two ways:
-
-- Preferred (Web console): In the PythonAnywhere Web tab, add `STOCKALERT_DEBUG` with value `false` under "Environment variables" for your web app, then Reload.
-- Alternate (wsgi): `backend/wsgi.py` contains a `os.environ.setdefault("STOCKALERT_DEBUG", "false")` line that will set a default of `false` when the WSGI process starts.
-
-Do not expose the Flask debug server in production; ensure `STOCKALERT_DEBUG` is set to `false` on any public deployment.
-
-## Trigger StockAlertJob Workflow
-
-`execJob.py` sends a workflow dispatch request to GitHub Actions.
-
-Required environment variable:
-- `GH_TOKEN`: GitHub token with workflow dispatch permission on `paec/stock_alert_job`
-
-Run:
-
-```powershell
-$env:GH_TOKEN="<your-token>"
-python execJob.py
-```
-
-## Notes
-
-- SQLite DB file is `backend/config.db`.
-- `POST /api/config` updates `global_config` and fully replaces `stock_config` in a single transaction.
-- If `global_config` row is missing, `GET /api/config` falls back to defaults (`days=60`, `drop_percent=10`).
-- Consider adding auth and audit log before exposing this service publicly.
+If frontend and backend are on different domains, configure reverse proxy or CORS.

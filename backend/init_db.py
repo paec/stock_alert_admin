@@ -1,8 +1,5 @@
 from models import DB_PATH, get_db
 
-DEFAULT_LONG_TERM_DAYS = 60
-DEFAULT_LONG_TERM_DROP_PERCENT = 10.0
-
 
 def init_db():
     conn = get_db()
@@ -13,16 +10,6 @@ def init_db():
             symbol TEXT,
             x_days INTEGER,
             y_percent REAL
-        )
-        """
-    )
-
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS global_config (
-            id INTEGER PRIMARY KEY CHECK (id = 1),
-            long_term_drop_days INTEGER NOT NULL,
-            long_term_drop_percent REAL NOT NULL
         )
         """
     )
@@ -38,16 +25,6 @@ def init_db():
         conn.executemany(
             "INSERT INTO stock_config (symbol, x_days, y_percent) VALUES (?, ?, ?)",
             example_data
-        )
-
-    global_count = conn.execute("SELECT COUNT(*) AS c FROM global_config").fetchone()["c"]
-    if global_count == 0:
-        conn.execute(
-            """
-            INSERT INTO global_config (id, long_term_drop_days, long_term_drop_percent)
-            VALUES (1, ?, ?)
-            """,
-            (DEFAULT_LONG_TERM_DAYS, DEFAULT_LONG_TERM_DROP_PERCENT),
         )
 
     conn.commit()
