@@ -8,6 +8,7 @@ This script is idempotent and safe to run multiple times.
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -28,6 +29,7 @@ def run(cmd: list[str], desc: str) -> None:
 
 def write_wsgi_file() -> None:
     content = f'''"""WSGI entrypoint for PythonAnywhere."""
+import os
 import sys
 from pathlib import Path
 
@@ -39,6 +41,7 @@ if str(ROOT) not in sys.path:
 
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
+os.environ.setdefault("STOCKALERT_DEBUG", "false")
 
 from app import app as application
 '''
