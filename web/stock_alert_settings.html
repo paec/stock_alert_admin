@@ -1,0 +1,87 @@
+<div>
+
+  <!--  頁面標題區  -->
+  <div class="page-header">
+    <div class="page-header-icon"><i class="pi pi-bell"></i></div>
+    <div>
+      <h1>Stock Alert Settings</h1>
+      <p>Configure drop thresholds and per-symbol alert rules</p>
+    </div>
+  </div>
+
+  <!--  全域長期跌幅設定卡片  -->
+  <section class="settings-card">
+    <div class="card-header">
+      <div class="card-title">
+        <i class="pi pi-sliders-h"></i>
+        <span>Global Long-Term Drop</span>
+      </div>
+      <!-- p-tag 是 PrimeVue 的標籤元件，純粹顯示用 -->
+      <p-tag severity="info" value="GLOBAL" :rounded="true" />
+    </div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Long-Term Days</label>
+        <p-inputnumber
+          v-model="longTermDrop.days"
+          :min="1" :use-grouping="false"
+          show-buttons button-layout="stacked"
+          increment-button-icon="pi pi-chevron-up"
+          decrement-button-icon="pi pi-chevron-down"
+        />
+      </div>
+      <div class="form-field">
+        <label>Drop Threshold</label>
+        <p-inputnumber
+          v-model="longTermDrop.drop_percent"
+          :min="0" :step="1" :max-fraction-digits="1"
+          :use-grouping="false" suffix="%"
+          show-buttons button-layout="stacked"
+          increment-button-icon="pi pi-chevron-up"
+          decrement-button-icon="pi pi-chevron-down"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!--  Alert Rules 表格卡片  -->
+  <section class="settings-card">
+    <div class="card-header">
+      <div class="card-title">
+        <i class="pi pi-list"></i>
+        <span>Alert Rules</span>
+      </div>
+      <!-- rules.length 是響應式值，rules 陣列長度變動時自動更新 -->
+      <p-tag :value="rules.length + ' RULES'" severity="secondary" :rounded="true" />
+    </div>
+    <div ref="tableEl" id="rules-table"></div>
+    <div class="actions-bar">
+      <p-button label="Add Rule" icon="pi pi-plus" severity="secondary" outlined size="small" @click="addRule" />
+    </div>
+  </section>
+
+  <!--  底部動作列  -->
+  <div class="save-bar">
+    <p-button label="Reset" icon="pi pi-refresh" severity="secondary" outlined @click="loadConfig" />
+    <p-button label="Save Settings" icon="pi pi-save" severity="success" @click="save" />
+  </div>
+
+  <!--  Toast 通知堆疊區（右下角固定定位）  -->
+  <div class="toast-stack">
+    <div
+      v-for="item in notifications"
+      :key="item.id"
+      class="app-toast"
+      :class="'app-toast-' + item.severity"
+    >
+      <div class="app-toast-copy">
+        <strong>{{ item.summary }}</strong>
+        <span>{{ item.detail }}</span>
+      </div>
+      <button class="app-toast-close" @click="removeToast(item.id)">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  </div>
+
+</div>

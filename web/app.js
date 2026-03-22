@@ -314,119 +314,29 @@ const RootComponent = {
   //   :class="expr"      : 動態 class，冒號開頭表示「右邊是 JS 表達式」，不是純字串
   //   @click="fn"        : 監聽點擊事件，等同 v-on:click="fn"
   //   {{ expr }}         : 輸出變數或表達式的值到畫面（單向，純顯示）
-  template: `
-    <div>
-
-      <!--  頁面標題區  -->
-      <div class="page-header">
-        <div class="page-header-icon"><i class="pi pi-bell"></i></div>
-        <div>
-          <h1>Stock Alert Settings</h1>
-          <p>Configure drop thresholds and per-symbol alert rules</p>
-        </div>
-      </div>
-
-      <!--  全域長期跌幅設定卡片  -->
-      <section class="settings-card">
-        <div class="card-header">
-          <div class="card-title">
-            <i class="pi pi-sliders-h"></i>
-            <span>Global Long-Term Drop</span>
-          </div>
-          <!-- p-tag 是 PrimeVue 的標籤元件，純粹顯示用 -->
-          <p-tag severity="info" value="GLOBAL" :rounded="true" />
-        </div>
-        <div class="form-grid">
-          <div class="form-field">
-            <label>Long-Term Days</label>
-            <!-- p-inputnumber 是 PrimeVue 的數字輸入元件。
-                 v-model 雙向綁定 longTermDrop.days，
-                 按 + / - 或直接輸入數字都會同步更新。 -->
-            <p-inputnumber
-              v-model="longTermDrop.days"
-              :min="1" :use-grouping="false"
-              show-buttons button-layout="stacked"
-			  increment-button-icon="pi pi-chevron-up"
-			  decrement-button-icon="pi pi-chevron-down"
-            />
-          </div>
-          <div class="form-field">
-            <label>Drop Threshold</label>
-            <p-inputnumber
-              v-model="longTermDrop.drop_percent"
-              :min="0" :step="1" :max-fraction-digits="1"
-              :use-grouping="false" suffix="%"
-              show-buttons button-layout="stacked"
-			  increment-button-icon="pi pi-chevron-up"
-			  decrement-button-icon="pi pi-chevron-down"
-            />
-          </div>
-        </div>
-      </section>
-
-      <!--  Alert Rules 表格卡片  -->
-      <section class="settings-card">
-        <div class="card-header">
-          <div class="card-title">
-            <i class="pi pi-list"></i>
-            <span>Alert Rules</span>
-          </div>
-          <!-- rules.length 是響應式值，rules 陣列長度變動時自動更新 -->
-          <p-tag :value="rules.length + ' RULES'" severity="secondary" :rounded="true" />
-        </div>
-        <!-- ref="tableEl": 讓 Vue 把這個 DOM 節點的參照填入 setup() 裡的 tableEl.value -->
-        <div ref="tableEl" id="rules-table"></div>
-        <div class="actions-bar">
-          <p-button label="Add Rule" icon="pi pi-plus" severity="secondary" outlined size="small" @click="addRule" />
-        </div>
-      </section>
-
-      <!--  底部動作列  -->
-      <div class="save-bar">
-        <!-- Reset: 重新向後端拉一次資料，覆蓋目前未儲存的變更 -->
-        <p-button label="Reset" icon="pi pi-refresh" severity="secondary" outlined @click="loadConfig" />
-        <p-button label="Save Settings" icon="pi pi-save" severity="success" @click="save" />
-      </div>
-
-      <!--  Toast 通知堆疊區（右下角固定定位）  -->
-      <!-- v-for 迴圈渲染 notifications 陣列，每筆顯示一個 toast 卡片 -->
-      <div class="toast-stack">
-        <div
-          v-for="item in notifications"
-          :key="item.id"
-          class="app-toast"
-          :class="'app-toast-' + item.severity"
-        >
-          <div class="app-toast-copy">
-            <strong>{{ item.summary }}</strong>
-            <span>{{ item.detail }}</span>
-          </div>
-          <!-- 點  手動關閉 toast -->
-          <button class="app-toast-close" @click="removeToast(item.id)">
-            <i class="pi pi-times"></i>
-          </button>
-        </div>
-      </div>
-
-    </div>
-  `,
+  // Template is loaded from external file `template.html` at runtime.
 };
 
 
-//  建立並啟動 Vue 應用程式 
+//  建立並啟動 Vue 應用程式，template 從外部檔案讀取
+(async () => {
+  try {
+    const templateText = await fetch('./stock_alert_settings.html').then((r) => r.text());
+    RootComponent.template = templateText;
 
-const app = createApp(RootComponent);
+    const app = createApp(RootComponent);
+    // 安裝 PrimeVue 插件（啟用 ripple 按鈕波紋效果）
+    app.use(primevue.config.default, { ripple: true });
 
-// 安裝 PrimeVue 插件（啟用 ripple 按鈕波紋效果）
-app.use(primevue.config.default, { ripple: true });
+    // 全域註冊 PrimeVue 元件，讓 template 裡可以直接用 <p-button> 等標籤。
+    app.component('p-card',        primevue.card);
+    app.component('p-button',      primevue.button);
+    app.component('p-inputnumber', primevue.inputnumber);
+    app.component('p-tag',         primevue.tag);
 
-// 全域註冊 PrimeVue 元件，讓 template 裡可以直接用 <p-button> 等標籤。
-// 鍵是 template 裡的標籤名稱，值是對應的元件物件。
-app.component('p-card',        primevue.card);
-app.component('p-button',      primevue.button);
-app.component('p-inputnumber', primevue.inputnumber);
-app.component('p-tag',         primevue.tag);
-
-// 把 Vue 應用程式掛載到 index.html 裡 id="app" 的 <div> 上，
-// 從這個節點開始，Vue 接管所有的 DOM 渲染。
-app.mount('#app');
+    // 把 Vue 應用程式掛載到 index.html 裡 id="app" 的 <div> 上
+    app.mount('#app');
+  } catch (err) {
+    console.error('Failed to load template.html', err);
+  }
+})();

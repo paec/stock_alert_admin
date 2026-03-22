@@ -40,6 +40,60 @@
 
       #app { max-width: 900px; margin: 0 auto; }
 
+      /* ── InputNumber 樣式統一整理 ── */
+      .form-field .p-inputnumber,
+      .form-field .p-inputnumber .p-inputtext {
+        width: 100%;
+        font-family: 'IBM Plex Mono', monospace !important;
+        color: #0f1724;
+        height: 32px !important;
+        min-height: 32px !important;
+        font-size: 15px !important;
+        padding: 2px 8px !important;
+        border-radius: 7px !important;
+        vertical-align: middle;
+      }
+      .form-field .p-inputnumber .p-inputnumber-button {
+        width: 26px !important;
+        min-width: 26px !important;
+        height: 15px !important;
+        font-size: 13px !important;
+        padding: 0 !important;
+        border-radius: 6px !important;
+        margin: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(37,99,235,0.12);
+        background: rgba(37,99,235,0.06);
+        box-shadow: none;
+        transition: background .12s ease, box-shadow .12s ease, transform .06s ease;
+      }
+      .form-field .p-inputnumber .p-inputnumber-button-group {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0px;
+        height: 32px !important;
+      }
+      .form-field .p-inputnumber .p-inputnumber-button .pi {
+        font-size: 12px !important;
+        line-height: 1;
+        color: #2563eb;
+      }
+      .form-field .p-inputnumber .p-inputnumber-button:hover,
+      .form-field .p-inputnumber .p-inputnumber-button:focus {
+        background: rgba(37,99,235,0.12);
+        box-shadow: 0 6px 18px rgba(37,99,235,0.06);
+        transform: translateY(-1px);
+      }
+      .form-field {
+        gap: 6px;
+      }
+      .form-field label {
+        margin-bottom: 2px;
+      }
+
       /* ── Page Header ── */
       .page-header {
         display: flex; align-items: center; gap: 14px;
