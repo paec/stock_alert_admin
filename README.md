@@ -184,6 +184,31 @@ It calls:
 
 In production, serve `web/` and reverse-proxy `/api/*` to Flask backend.
 
+## Frontend dependencies (CDN)
+
+The admin UI in `web/index.html` loads UI libs from CDNs. Current notable versions used in the repository:
+
+- Vue 3 (`vue@3/dist/vue.global.js`)
+- PrimeVue (3.53.0)
+- PrimeIcons
+- Tabulator (6.2.1)
+- Google Fonts: `Outfit`, `IBM Plex Mono`
+
+These are included via `<script>`/`<link>` tags in `web/index.html`. No npm build is required for the shipped UI.
+
+## Local dev notes for the Web UI
+
+- When editing `web/app.js` or `web/index.html`, open the page in a browser and hard-refresh (clear cache) to pick up updated CDN bundles.
+- The frontend performs normalization and validation before sending `POST /api/config` (symbols uppercased, numeric conversion, basic range checks). See `web/app.js` for exact behavior.
+
+## Database file in repository
+
+This repository currently contains a SQLite DB at `backend/config.db` (committed as a binary file). Recommended options:
+
+1. Remove `backend/config.db` from the repository and add `backend/config.db` to `.gitignore`; provide `backend/init_db.py` or `local_prepare.py` as the canonical way to create/seed a local DB sample.
+2. Or keep a small sample DB but clearly mark it as a sample/test DB in this README and avoid using it for production.
+
+
 ## PythonAnywhere Deployment
 
 Run one-shot preparation script:
