@@ -25,7 +25,8 @@
     <!-- PrimeVue all-in-one bundle -->
     <script src="https://unpkg.com/primevue@3.53.0/core/core.min.js"></script>
     <script src="https://unpkg.com/primevue@3.53.0/toastservice/toastservice.min.js"></script>
-
+    <script src="https://unpkg.com/primevue@3.53.0/tag/tag.min.js"></script>
+    
     <style>
 
       * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,8 +40,7 @@
       }
 
       #app { max-width: 900px; margin: 0 auto; }
-
-      /* ── InputNumber 樣式統一整理 ── */
+   
       .form-field .p-inputnumber,
       .form-field .p-inputnumber .p-inputtext {
         width: 100%;
@@ -145,12 +145,6 @@
       .form-field label {
         font-size: 12px; font-weight: 500; color: #8892a4;
         text-transform: uppercase; letter-spacing: .6px;
-      }
-      .form-field .p-inputnumber,
-      .form-field .p-inputnumber .p-inputtext {
-        width: 100%;
-        font-family: 'IBM Plex Mono', monospace !important;
-        color: #0f1724;
       }
 
       /* ── Tabulator overrides ── */

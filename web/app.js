@@ -125,7 +125,7 @@ const RootComponent = {
     //   2. tableEl.value 還是 null（DOM 尚未就緒） 跳過
     const buildTable = () => {
       if (table || !tableEl.value) return;
-      table = new Tabulator(tableEl.value, {
+      table = new Tabulator(tableEl.value, { // DOM建好後：tableEl.value = <div#rules-table>
         data: rules.value,         // 初始資料來自 Vue 的 rules.value
         layout: 'fitColumns',       // 欄寬自動撐滿容器寬度
         height: 'auto',             // 高度依資料行數自動展開（不固定高度）
