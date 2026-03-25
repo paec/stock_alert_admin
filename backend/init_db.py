@@ -10,9 +10,9 @@ def init_db():
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS stock_config (
-            symbol TEXT,
-            x_days INTEGER,
-            y_percent REAL
+            symbol TEXT PRIMARY KEY,
+            x_days INTEGER NOT NULL,
+            y_percent REAL NOT NULL
         )
         """
     )

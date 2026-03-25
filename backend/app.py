@@ -17,8 +17,64 @@ DEFAULT_LONG_TERM_DAYS = 60
 DEFAULT_LONG_TERM_DROP_PERCENT = 10.0
 
 
-def _invalid_payload_response():
-    return jsonify({"status": "error", "message": "Invalid payload"}), 400
+def _error_response(message, status_code=400):
+    return jsonify({"status": "error", "message": message}), status_code
+
+
+def _parse_long_term_drop(data):
+    """Validate and parse long_term_drop config."""
+    long_term_drop = data.get("long_term_drop")
+    if not isinstance(long_term_drop, dict):
+        raise ValueError("long_term_drop must be a dict")
+
+    days = long_term_drop.get("days")
+    drop_percent = long_term_drop.get("drop_percent")
+
+    if days is None or drop_percent is None:
+        raise ValueError("days and drop_percent are required")
+
+    try:
+        parsed_days = int(days)
+        parsed_percent = float(drop_percent)
+    except (TypeError, ValueError):
+        raise ValueError("days must be int, drop_percent must be numeric")
+
+    if parsed_days <= 0 or parsed_percent <= 0:
+        raise ValueError("days and drop_percent must be > 0")
+
+    return parsed_days, parsed_percent
+
+
+def _parse_rule(item):
+    """Validate and parse a single stock rule."""
+    if not isinstance(item, dict):
+        raise ValueError("each rule must be a dict")
+
+    symbol = str(item.get("symbol", "")).strip().upper()
+    x_days = item.get("x_days")
+    y_percent = item.get("y_percent")
+
+    if not symbol or x_days is None or y_percent is None:
+        raise ValueError("symbol, x_days, y_percent are all required")
+
+    try:
+        parsed_x_days = int(x_days)
+        parsed_y_percent = float(y_percent)
+    except (TypeError, ValueError):
+        raise ValueError("x_days must be int, y_percent must be numeric")
+
+    if parsed_x_days <= 0 or parsed_y_percent <= 0:
+        raise ValueError("x_days and y_percent must be > 0")
+
+    return symbol, parsed_x_days, parsed_y_percent
+
+
+def _parse_rules(rules_data):
+    """Validate and parse all stock rules."""
+    if not isinstance(rules_data, list):
+        raise ValueError("rules must be a list")
+
+    return [_parse_rule(item) for item in rules_data]
 
 
 @app.route("/")
@@ -66,81 +122,46 @@ def get_config():
 
 @app.route("/api/config", methods=["POST"])
 def update_config():
-    data = request.get_json(silent=True) or {}
-
-    rules = data.get("rules")
-    if not isinstance(rules, list):
-        return _invalid_payload_response()
-
-    long_term_drop = data.get("long_term_drop")
-    if not isinstance(long_term_drop, dict):
-        return _invalid_payload_response()
-
-    long_term_days = long_term_drop.get("days")
-    long_term_drop_percent = long_term_drop.get("drop_percent")
-    if long_term_days is None or long_term_drop_percent is None:
-        return _invalid_payload_response()
-
     try:
-        parsed_long_term_days = int(long_term_days)
-        parsed_long_term_drop_percent = float(long_term_drop_percent)
-    except (TypeError, ValueError):
-        return _invalid_payload_response()
+        data = request.get_json(silent=True) or {}
 
-    if parsed_long_term_days <= 0 or parsed_long_term_drop_percent <= 0:
-        return _invalid_payload_response()
+        # Validate and parse inputs
+        long_term_days, long_term_percent = _parse_long_term_drop(data)
+        rules = _parse_rules(data.get("rules", []))
 
-    cleaned_rules = []
-    for item in rules:
-        if not isinstance(item, dict):
-            return _invalid_payload_response()
-
-        symbol = str(item.get("symbol", "")).strip().upper()
-        x_days = item.get("x_days")
-        y_percent = item.get("y_percent")
-
-        if not symbol or x_days is None or y_percent is None:
-            return _invalid_payload_response()
-
+        # Update database
+        conn = get_db()
         try:
-            parsed_x_days = int(x_days)
-            parsed_y_percent = float(y_percent)
-        except (TypeError, ValueError):
-            return _invalid_payload_response()
-
-        if parsed_x_days <= 0 or parsed_y_percent <= 0:
-            return _invalid_payload_response()
-
-        cleaned_rules.append((symbol, parsed_x_days, parsed_y_percent))
-
-    conn = get_db()
-    try:
-        conn.execute(
-            """
-            INSERT INTO global_config (id, long_term_drop_days, long_term_drop_percent)
-            VALUES (1, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
-                long_term_drop_days = excluded.long_term_drop_days,
-                long_term_drop_percent = excluded.long_term_drop_percent
-            """,
-            (parsed_long_term_days, parsed_long_term_drop_percent),
-        )
-
-        conn.execute("DELETE FROM stock_config")
-        for symbol, x_days, y_percent in cleaned_rules:
+            # Update global_config with UPSERT
             conn.execute(
-                "INSERT INTO stock_config (symbol, x_days, y_percent) VALUES (?,?,?)",
-                (symbol, x_days, y_percent),
+                """
+                INSERT INTO global_config (id, long_term_drop_days, long_term_drop_percent)
+                VALUES (1, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    long_term_drop_days = excluded.long_term_drop_days,
+                    long_term_drop_percent = excluded.long_term_drop_percent
+                """,
+                (long_term_days, long_term_percent),
             )
 
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
+            # Replace stock_config (DELETE + INSERT to reflect frontend deletions)
+            conn.execute("DELETE FROM stock_config")
+            for symbol, x_days, y_percent in rules:
+                conn.execute(
+                    "INSERT INTO stock_config (symbol, x_days, y_percent) VALUES (?, ?, ?)",
+                    (symbol, x_days, y_percent),
+                )
 
-    return jsonify({"status": "ok"})
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return jsonify({"status": "ok"})
+    except ValueError as e:
+        return _error_response(str(e))
 
 
 if __name__ == "__main__":
