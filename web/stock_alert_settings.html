@@ -1,6 +1,7 @@
 <div>
 
-  <!--  頁面標題區  -->
+  <!-- 首頁的頁面標題區。
+       這裡純粹是靜態畫面說明，沒有特別的 Vue 邏輯。 -->
   <div class="page-header">
     <div class="page-header-icon"><i class="pi pi-bell"></i></div>
     <div>
@@ -9,19 +10,25 @@
     </div>
   </div>
 
-  <!--  全域長期跌幅設定卡片  -->
-  <section class="settings-card">  <!-- section 預設是 display: block、 position: static  -->
+  <!-- 全域長期跌幅設定卡片。
+       section 是語意化標籤，表示這是一個獨立區塊。 -->
+  <section class="settings-card">
     <div class="card-header">
       <div class="card-title">
         <i class="pi pi-sliders-h"></i>
         <span>Global Long-Term Drop</span>
       </div>
-      <!-- p-tag 是 PrimeVue 的標籤元件，純粹顯示用 -->
+      <!-- p-tag 是 PrimeVue 的標籤元件，這裡只拿來顯示 GLOBAL 標記 -->
       <p-tag severity="info" value="GLOBAL" :rounded="true" />
     </div>
+
+    <!-- form-grid 把下面兩個欄位排成左右兩欄 -->
     <div class="form-grid">
       <div class="form-field">
         <label>Long-Term Days</label>
+        <!-- v-model 代表雙向綁定。
+             使用者修改輸入框時，longTermDrop.days 會跟著改；
+             程式改 longTermDrop.days 時，畫面也會更新。 -->
         <p-inputnumber
           v-model="longTermDrop.days"
           :min="1" :use-grouping="false"
@@ -32,6 +39,7 @@
       </div>
       <div class="form-field">
         <label>Drop Threshold</label>
+        <!-- suffix="%" 會在輸入框後面顯示百分比符號 -->
         <p-inputnumber
           v-model="longTermDrop.drop_percent"
           :min="0" :step="1" :max-fraction-digits="1"
@@ -44,34 +52,39 @@
     </div>
   </section>
 
-  <!--  Alert Rules 表格卡片  -->
+  <!-- 規則表格區塊。這裡的真實表格不是 Vue 自己畫的，
+       而是由 home-view.js 裡的 Tabulator 套件掛進下面那個 div。 -->
   <section class="settings-card">
     <div class="card-header">
       <div class="card-title">
         <i class="pi pi-list"></i>
         <span>Alert Rules</span>
       </div>
-      <!-- rules.length 是響應式值，rules 陣列長度變動時自動更新 -->
+      <!-- rules.length 是響應式值。
+           當規則筆數增減時，這裡顯示的數字會自動更新。 -->
       <p-tag :value="rules.length + ' RULES'" severity="secondary" :rounded="true" />
     </div>
 	
-	<!-- Tabulator 表格的掛載點：初始為空，
-     Vue 在 DOM 建好後會把這個 div 的真實元素塞進 tableEl.value，
-     Tabulator 拿到後會在這裡渲染出完整的表格 -->
-	<!-- 後續 rules-table透過tablulator的 setData 去改變DOM，不藉由VUE資料管理渲染-->
+	<!-- 這個 div 是 Tabulator 的掛載點。
+     一開始它是空的，等 home-view.js 拿到這個 DOM 元素後，
+     才會在這裡建立可編輯表格。 -->
     <div ref="tableEl" id="rules-table"></div>
+
+    <!-- Add Rule 按鈕：按下後呼叫 setup() 裡 return 出來的 addRule 函式 -->
     <div class="actions-bar">
       <p-button label="Add Rule" icon="pi pi-plus" severity="secondary" outlined size="small" @click="addRule" />
     </div>
   </section>
 
-  <!--  底部動作列  -->
+  <!-- 底部動作列。
+       Reset 重新向後端讀資料；Save Settings 則把目前資料送回後端。 -->
   <div class="save-bar">
     <p-button label="Reset" icon="pi pi-refresh" severity="secondary" outlined @click="loadConfig" />
     <p-button label="Save Settings" icon="pi pi-save" severity="success" @click="save" />
   </div>
 
-  <!--  Toast 通知堆疊區（右下角固定定位）  -->
+  <!-- Toast 通知區。
+       v-for 會把 notifications 陣列中的每一筆訊息都渲染成一張通知卡。 -->
   <div class="toast-stack">
     <div
       v-for="item in notifications"
@@ -83,6 +96,8 @@
         <strong>{{ item.summary }}</strong>
         <span>{{ item.detail }}</span>
       </div>
+
+      <!-- 按下關閉按鈕時，把這筆通知從陣列中移除 -->
       <button class="app-toast-close" @click="removeToast(item.id)">
         <i class="pi pi-times"></i>
       </button>

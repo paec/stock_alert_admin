@@ -19,8 +19,13 @@
     <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator_simple.min.css" />
     <script src="https://unpkg.com/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
 
-    <!-- Vue 3 -->
+        <!-- Vue 3 核心函式庫。
+          整個前端頁面的反應式資料、元件、模板渲染都靠它。 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+        <!-- Vue Router。
+          用來做單頁應用程式(SPA)的前端路由切換。 -->
+    <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script>
 
     <!-- PrimeVue all-in-one bundle -->
     <script src="https://unpkg.com/primevue@3.53.0/core/core.min.js"></script>
@@ -29,8 +34,13 @@
     
     <style>
 
+      /* 全域重設。
+        box-sizing: border-box 讓寬高計算比較直覺。
+        margin / padding 歸零可以減少不同瀏覽器的預設差異。 */
       * { box-sizing: border-box; margin: 0; padding: 0; }
 
+      /* body 是整個頁面的外層。
+        這裡設定字體、背景色、文字色與整體留白。 */
       body {
         font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
         background: #f4f6f9; /* 淺灰白背景 */
@@ -39,8 +49,60 @@
         padding: 32px 16px 64px;
       }
 
+      /* Vue app 的掛載點容器。
+        限制最大寬度，並用 margin: 0 auto 讓內容置中。 */
       #app { max-width: 900px; margin: 0 auto; }
+
+      /* ===== 導覽列區塊 ===== */
+      .app-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: #ffffff;
+        border: 1px solid #e2e7ef;
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-bottom: 20px;
+      }
+      .app-nav-brand {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a2235;
+        letter-spacing: 0.3px;
+      }
+      .app-nav-links {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .app-nav-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1px solid #dbe3ef;
+        text-decoration: none;
+        color: #556674;
+        background: #f8fafc;
+        font-size: 13px;
+        font-weight: 500;
+        transition: background .15s ease, color .15s ease, border-color .15s ease;
+      }
+      .app-nav-link:hover {
+        color: #1d4ed8;
+        border-color: #bfdbfe;
+        background: #eff6ff;
+      }
+      .app-nav-link.active {
+        color: #ffffff;
+        border-color: #2563eb;
+        background: #2563eb;
+      }
    
+      /* ===== PrimeVue InputNumber 外觀微調 =====
+         這裡主要調整首頁數字輸入框的寬高、字型和上下箭頭按鈕。 */
       .form-field .p-inputnumber,
       .form-field .p-inputnumber .p-inputtext {
         width: 100%;
@@ -94,7 +156,7 @@
         margin-bottom: 2px;
       }
 
-      /* ── Page Header ── */
+      /* ===== 頁面標題區 ===== */
       .page-header {
         display: flex; align-items: center; gap: 14px;
         margin-bottom: 32px;
@@ -110,7 +172,8 @@
       .page-header h1 { font-size: 22px; font-weight: 600; letter-spacing: -.3px; }
       .page-header p  { font-size: 13px; color: #8892a4; margin-top: 2px; }
 
-      /* ── PrimeVue Card overrides ── */
+      /* ===== PrimeVue 卡片覆寫樣式 =====
+        讓卡片更接近目前這個管理後台的視覺風格。 */
       .p-card {
         margin-bottom: 20px !important;
         background: #ffffff !important; /* 白卡 */
@@ -139,7 +202,7 @@
       }
       .card-title i { color: #2563eb; }
 
-      /* ── Form layout ── */
+      /* ===== 表單區塊排版 ===== */
       .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
       .form-field { display: flex; flex-direction: column; gap: 8px; }
       .form-field label {
@@ -147,7 +210,8 @@
         text-transform: uppercase; letter-spacing: .6px;
       }
 
-      /* ── Tabulator overrides ── */
+      /* ===== Tabulator 樣式覆寫 =====
+        Tabulator 是第三方表格套件，這裡把它的外觀改成和整體頁面一致。 */
       .tabulator {
         background: #ffffff !important;
         border: 1px solid #e2e7ef !important;
@@ -188,7 +252,7 @@
         box-shadow: 0 6px 18px rgba(15,23,42,0.06) !important;
       }
 
-      /* row delete button inside Tabulator */
+      /* 表格列中的刪除按鈕 */
       .row-delete-btn {
         display: inline-flex; align-items: center; justify-content: center;
         width: 28px; height: 28px; border-radius: 6px;
@@ -198,6 +262,7 @@
       }
       .row-delete-btn:hover { background: #dc2626; color: #fff; }
 
+      /* 首頁底部按鈕列與右下角 toast 通知區 */
       .actions-bar { display: flex; gap: 10px; margin-top: 16px; }
       .save-bar {
         display: flex; justify-content: flex-end; gap: 12px;
@@ -253,10 +318,77 @@
         padding: 2px;
       }
       .app-toast-close:hover { color: #e2e8f0; }
+
+      /* ===== 管理頁示意卡片區塊 =====
+        這些樣式主要提供 admin 頁面的統計卡與活動清單。 */
+      .admin-panel {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+      }
+      .admin-stat {
+        border: 1px solid #e2e7ef;
+        border-radius: 10px;
+        background: #fbfdff;
+        padding: 14px;
+      }
+      .admin-stat span {
+        display: block;
+        color: #64748b;
+        font-size: 12px;
+      }
+      .admin-stat strong {
+        display: block;
+        margin-top: 6px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 22px;
+        color: #2563eb;
+      }
+      .admin-feed {
+        margin-top: 14px;
+        border: 1px solid #e2e7ef;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .admin-feed-row {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 12px;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef3f7;
+        font-size: 13px;
+      }
+      .admin-feed-row:last-child { border-bottom: 0; }
+      .admin-feed-row time {
+        color: #64748b;
+        font-family: 'IBM Plex Mono', monospace;
+      }
+
+      /* 手機版調整。
+         螢幕較窄時，把橫向排版改為直向，避免內容擠壓。 */
+      @media (max-width: 640px) {
+        .app-nav {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .admin-panel { grid-template-columns: 1fr; }
+        .admin-feed-row { grid-template-columns: 1fr; }
+      }
     </style>
   </head>
   <body>
+    <!-- 這個 div 是 Vue app 最終掛載的位置。
+         Vue 啟動後，所有畫面都會由 app.js 接管。 -->
     <div id="app"></div>
+
+    <!-- 先載入各個 view / component 檔案，
+         讓它們把自己註冊到 window.StockAlertAdmin 命名空間。 -->
+    <script src="views/home-view.js"></script>
+    <script src="components/admin-overview-panel.js"></script>
+    <script src="views/admin-view.js"></script>
+
+    <!-- 最後載入 app.js，負責建立 router 和啟動整個 Vue 應用。 -->
     <script src="app.js"></script>
   </body>
 </html>

@@ -1,0 +1,19 @@
+<div>
+  <!-- 管理頁的頁首說明區 -->
+  <div class="page-header">
+    <div class="page-header-icon"><i class="pi pi-shield"></i></div>
+    <div>
+      <h1>Administrator</h1>
+      <p>管理者頁面示意版，後續可放使用者管理與權限控管。</p>
+    </div>
+  </div>
+
+  <!-- 這裡使用自訂元件 admin-overview-panel。
+       冒號 : 開頭代表右邊是 JavaScript 表達式，不是純字串。
+       @refresh 代表監聽這個子元件送出的 refresh 事件。 -->
+  <admin-overview-panel
+    :stats="stats"
+    :activities="activities"
+    @refresh="refreshDemoData"
+  />
+</div>
