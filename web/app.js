@@ -1,3 +1,6 @@
+import HomeView from './views/home-view.js';
+import AdminView from './views/admin-view.js';
+
 // 從 Vue 全域物件中取出 createApp。
 // createApp 的工作是「建立整個 Vue 應用程式」。
 // 你可以把它理解成：把所有頁面、路由、元件組裝起來，最後掛到畫面上。
@@ -9,12 +12,6 @@ const { createApp } = Vue;
 // 這種模式的好處是：不需要後端額外處理前端路由，對目前這種純前端頁面最方便。
 const { createRouter, createWebHashHistory } = VueRouter;
 
-// 建立一個全域命名空間，避免不同檔案之間的變數互相汙染。
-// 因為這個專案目前不是用 Vite / Webpack / ES Module，而是用多個 <script> 直接載入，
-// 所以各檔案需要靠 window 上的共用物件彼此溝通。
-window.StockAlertAdmin = window.StockAlertAdmin || {};
-window.StockAlertAdmin.views = window.StockAlertAdmin.views || {};
-
 // routes 陣列就是「網址 -> 畫面元件」的對照表。
 // path: 網址路徑
 // component: 當網址符合時，要渲染哪個 Vue 元件
@@ -23,8 +20,8 @@ window.StockAlertAdmin.views = window.StockAlertAdmin.views || {};
 // '/admin' -> 管理頁畫面
 // 最後一條是保底規則，若輸入未知路徑，就自動導回首頁。
 const routes = [
-  { path: '/', component: window.StockAlertAdmin.views.HomeView },
-  { path: '/admin', component: window.StockAlertAdmin.views.AdminView },
+  { path: '/', component: HomeView },
+  { path: '/admin', component: AdminView },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 
@@ -76,8 +73,8 @@ const AppShell = {
 
     // 將讀回來的 HTML 字串指定給對應的 View。
     // 這樣每個 View 的 JS 和 HTML 可以拆開放，方便閱讀與維護。
-    window.StockAlertAdmin.views.HomeView.template = homeTemplate;
-    window.StockAlertAdmin.views.AdminView.template = adminTemplate;
+    HomeView.template = homeTemplate;
+    AdminView.template = adminTemplate;
 
     // 建立 Vue 應用程式，根元件是 AppShell。
     const app = createApp(AppShell);

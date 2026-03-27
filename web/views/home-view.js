@@ -1,20 +1,14 @@
-// 用 IIFE（Immediately Invoked Function Expression，立即執行函式）包起來，
-// 可以避免這個檔案裡的變數直接灑到全域作用域。
-(function () {
-  // 這個首頁 view 使用的是 Vue 3 Composition API。
-  // ref       : 讓單一值或陣列變成響應式
-  // reactive  : 讓整個物件變成響應式
-  // onMounted : 元件掛上畫面後執行
-  // nextTick  : 等 Vue 把 DOM 更新完成後再執行後續程式
-  const { ref, reactive, onMounted, nextTick } = Vue;
+// 這個首頁 view 使用的是 Vue 3 Composition API。
+// ref       : 讓單一值或陣列變成響應式
+// reactive  : 讓整個物件變成響應式
+// onMounted : 元件掛上畫面後執行
+// nextTick  : 等 Vue 把 DOM 更新完成後再執行後續程式
+const { ref, reactive, onMounted, nextTick } = Vue;
 
-  // 若全域命名空間還不存在，就先建立。
-  window.StockAlertAdmin = window.StockAlertAdmin || {};
-  window.StockAlertAdmin.views = window.StockAlertAdmin.views || {};
-
-  // HomeView 是首頁對應的 Vue 元件。
-  // 之後 router 會把它綁到 '/' 路徑上。
-  window.StockAlertAdmin.views.HomeView = {
+// HomeView 是首頁對應的 Vue 元件。
+// 之後 router 會把它綁到 '/' 路徑上。
+// template 由 app.js 在 async 初始化時從 stock_alert_settings.html 注入。
+export default {
     // setup() 是 Composition API 的核心入口。
     // 在這裡宣告狀態、函式、生命週期，最後再 return 給 template 使用。
     setup() {
@@ -289,4 +283,3 @@
       };
     },
   };
-})();

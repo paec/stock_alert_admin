@@ -51,9 +51,10 @@ StockAlertAdmin/
     models.py       # DB connection helper
     wsgi.py         # PythonAnywhere WSGI entrypoint
   local_prepare.py  # One-shot local setup helper
-  web/
-    index.html      # Vue-based admin page
-    app.js          # Frontend logic for /api/config
+  web/              # Vue-based frontend (multiple pages, components, styles)
+    components/     # Reusable Vue components
+    views/          # Page-level Vue components
+    (HTML pages, app.js, styles.css)
   execJob.py        # Trigger StockAlertJob GitHub Actions workflow
   pythonanywhere_prepare.py   # One-shot deployment setup helper
   requirements.txt
@@ -175,10 +176,10 @@ Error response:
 
 ## Admin Web UI
 
-The admin UI is in `web/index.html` and uses Vue (CDN).
+The frontend in `web/` is Vue-based (loaded via CDN).
 In local development, the same Flask process serves both API and web UI.
 
-It calls:
+The UI calls:
 - `GET /api/config` on page load.
 - `POST /api/config` on save.
 
@@ -186,7 +187,7 @@ In production, serve `web/` and reverse-proxy `/api/*` to Flask backend.
 
 ## Frontend dependencies (CDN)
 
-The admin UI in `web/index.html` loads UI libs from CDNs. Current notable versions used in the repository:
+The frontend loads UI libs from CDNs. Current notable versions used in the repository:
 
 - Vue 3 (`vue@3/dist/vue.global.js`)
 - PrimeVue (3.53.0)
@@ -194,12 +195,12 @@ The admin UI in `web/index.html` loads UI libs from CDNs. Current notable versio
 - Tabulator (6.2.1)
 - Google Fonts: `Outfit`, `IBM Plex Mono`
 
-These are included via `<script>`/`<link>` tags in `web/index.html`. No npm build is required for the shipped UI.
+These are included via `<script>`/`<link>` tags in the HTML templates. No npm build is required for the shipped UI.
 
 ## Local dev notes for the Web UI
 
-- When editing `web/app.js` or `web/index.html`, open the page in a browser and hard-refresh (clear cache) to pick up updated CDN bundles.
-- The frontend performs normalization and validation before sending `POST /api/config` (symbols uppercased, numeric conversion, basic range checks). See `web/app.js` for exact behavior.
+- When editing frontend code in `web/`, open the page in a browser and hard-refresh (clear cache) to pick up updated CDN bundles.
+- The frontend performs normalization and validation before sending `POST /api/config` (symbols uppercased, numeric conversion, basic range checks).
 
 ## Database file in repository
 
@@ -211,24 +212,18 @@ This repository currently contains a SQLite DB at `backend/config.db` (committed
 
 ## PythonAnywhere Deployment
 
-Run one-shot preparation script:
+**Note:** Do NOT use `pythonanywhere_prepare.py` to generate `backend/wsgi.py` on Windows—the script will embed Windows paths that fail on PythonAnywhere (Linux).
 
-```powershell
-python pythonanywhere_prepare.py
-```
+Instead, follow the detailed guide in [PYTHONANYWHERE_DEPLOY_SOP.md](PYTHONANYWHERE_DEPLOY_SOP.md).  
+In summary:
 
-This script is for PythonAnywhere environment preparation.
+1. Clone repo to PythonAnywhere home directory
+2. Use pip to install dependencies (from the Linux shell on PythonAnywhere)
+3. Initialize SQLite DB using `python backend/init_db.py` on PythonAnywhere
+4. Edit the **default** WSGI config file in the Web tab with Linux paths (do not use `backend/wsgi.py`)
+5. Reload web app and test `/api/config`
 
-This script:
-- Upgrades pip
-- Installs dependencies
-- Initializes SQLite DB
-- Writes `backend/wsgi.py`
-
-Then in PythonAnywhere Web tab:
-- Point WSGI config to `backend/wsgi.py`
-- Reload web app
-- Test `/api/config`
+For detailed steps, environment variables, and troubleshooting, see [PYTHONANYWHERE_DEPLOY_SOP.md](PYTHONANYWHERE_DEPLOY_SOP.md).
 
 Debug mode behavior
 -------------------

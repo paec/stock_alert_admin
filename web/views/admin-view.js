@@ -1,20 +1,16 @@
 // 這個檔案定義管理頁 view。
 // 它是路由層級的元件，會對應到 /#/admin。
-(function () {
-  // 這個 view 只需要 ref，因為目前管理頁資料是簡單的響應式值。
-  const { ref } = Vue;
+import AdminOverviewPanel from '../components/admin-overview-panel.js';
 
-  // 建立全域命名空間，讓 app.js 能拿到這個 View。
-  window.StockAlertAdmin = window.StockAlertAdmin || {};
-  window.StockAlertAdmin.views = window.StockAlertAdmin.views || {};
-  window.StockAlertAdmin.components = window.StockAlertAdmin.components || {};
+// 這個 view 只需要 ref，因為目前管理頁資料是簡單的響應式値。
+const { ref } = Vue;
 
-  // AdminView 是管理頁本身。
-  // 它負責準備資料，並把資料傳給子元件 AdminOverviewPanel 顯示。
-  window.StockAlertAdmin.views.AdminView = {
+// AdminView 是管理頁本身。
+// 它負責準備資料，並把資料傳給子元件 AdminOverviewPanel 顯示。
+export default {
     // 在這裡註冊這個 view 會使用到的子元件。
     components: {
-      AdminOverviewPanel: window.StockAlertAdmin.components.AdminOverviewPanel,
+      AdminOverviewPanel,
     },
 
     // setup() 內定義這個頁面的狀態和行為。
@@ -56,4 +52,3 @@
       };
     },
   };
-})();

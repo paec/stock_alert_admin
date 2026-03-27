@@ -1,13 +1,9 @@
 // 這個檔案定義一個「可重用元件」：AdminOverviewPanel。
 // 它不是一整頁，而是管理頁中的一塊內容。
-(function () {
-  // 建立全域命名空間，讓其他檔案可以引用這個元件。
-  window.StockAlertAdmin = window.StockAlertAdmin || {};
-  window.StockAlertAdmin.components = window.StockAlertAdmin.components || {};
 
-  // 這個元件採用 Options API 寫法。
-  // 你可以把它當成用「物件設定」方式來描述元件需要什麼資料、會發出什麼事件。
-  window.StockAlertAdmin.components.AdminOverviewPanel = {
+// 這個元件採用 Options API 寫法。
+// 你可以把它當成用「物件設定」方式來描述元件需要什麼資料、會發出什麼事件。
+export default {
     // props 是父元件傳進來的資料。
     // 這裡要求傳入 stats 物件和 activities 陣列。
     props: {
@@ -72,4 +68,3 @@
       </section>
     `,
   };
-})();
