@@ -1,341 +1,1002 @@
-/* 全域重設。
-  box-sizing: border-box 讓寬高計算比較直覺。
-  margin / padding 歸零可以減少不同瀏覽器的預設差異。 */
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* ===== 全域樣式重設 =====
+   對所有元素進行基礎設定，確保跨瀏覽器的一致性。 */
+* {
+  /* box-sizing: border-box 表示寬高計算時包含 padding 和 border，讓尺寸更直覺 */
+  box-sizing: border-box;
+  /* margin 歸零：移除瀏覽器預設的外邊距 */
+  margin: 0;
+  /* padding 歸零：移除瀏覽器預設的內邊距 */
+  padding: 0;
+}
 
-/* body 是整個頁面的外層。
-  這裡設定字體、背景色、文字色與整體留白。 */
+/* ===== 頁面主容器 =====
+   設定整個網頁的外觀（背景色、字型、文字色等）。 */
 body {
+  /* font-family：字體優先順序。先用 Outfit，若無法顯示則依次嘗試其他系統字體 */
   font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-  background: #f4f6f9; /* 淺灰白背景 */
-  color: #0f1724;     /* 深色文字 */
+  /* background：頁面背景色為淺灰藍色 #f4f6f9 */
+  background: #f4f6f9;
+  /* color：全頁文字顏色為深色 #0f1724 */
+  color: #0f1724;
+  /* min-height：確保頁面至少占滿整個視窗高度（100vh = 100% viewport height） */
   min-height: 100vh;
+  /* padding：頁面四周留白（上下32像素，左右16像素，底部64像素） */
   padding: 32px 16px 64px;
 }
 
-/* Vue app 的掛載點容器。
-  限制最大寬度，並用 margin: 0 auto 讓內容置中。 */
-#app { max-width: 900px; margin: 0 auto; }
+/* ===== Vue 應用根容器 =====
+   限制內容寬度並居中排列。 */
+#app {
+  /* max-width：內容最多寬 900 像素，避免超寬螢幕上內容過寬 */
+  max-width: 900px;
+  /* margin: 0 auto：上下無邊距，左右自動計算使容器置中 */
+  margin: 0 auto;
+}
 
-/* ===== 導覽列區塊 ===== */
+/* ===== 導覽列區塊 =====
+   頁面頂部導覽列，使用 Flexbox 布局。 */
 .app-nav {
+  /* display: flex：使用 Flexbox 布局，讓子元素可以靈活排列 */
   display: flex;
+  /* align-items: center：垂直方向居中對齊（交叉軸） */
   align-items: center;
+  /* justify-content: space-between：左右兩端對齊，中間空間平均填充 */
   justify-content: space-between;
+  /* gap：Flex 子元素之間的間距為 12px */
   gap: 12px;
+  /* background：白色背景 */
   background: #ffffff;
+  /* border：1px 灰色邊框 */
   border: 1px solid #e2e7ef;
+  /* border-radius：10px 的圓角 */
   border-radius: 10px;
+  /* padding：內邊距（上下10px，左右14px） */
   padding: 10px 14px;
+  /* margin-bottom：下方留 20px 空間 */
   margin-bottom: 20px;
 }
+
+/* 導覽列品牌文字（左側標題） */
 .app-nav-brand {
+  /* font-size：字體大小為 14px */
   font-size: 14px;
+  /* font-weight：字體加粗度為 600（半粗體） */
   font-weight: 600;
+  /* color：深色文字 */
   color: #1a2235;
+  /* letter-spacing：字母間距為 0.3px（微調，使文字稍寬） */
   letter-spacing: 0.3px;
 }
+
+/* 導覽列連結群組容器（右側連結列表） */
 .app-nav-links {
+  /* display: flex：連結水平排列 */
   display: flex;
+  /* align-items: center：連結垂直居中 */
   align-items: center;
+  /* gap：連結之間間距 8px */
   gap: 8px;
 }
+
+/* 單一導覽列連結 */
 .app-nav-link {
+  /* display: inline-flex：行內 Flex 容器，讓圖標和文字能水平居中 */
   display: inline-flex;
+  /* align-items: center：連結內容垂直居中 */
   align-items: center;
+  /* justify-content: center：連結內容水平居中 */
   justify-content: center;
+  /* padding：內邊距（上下6px，左右12px） */
   padding: 6px 12px;
+  /* border-radius：999px 製造膠囊形狀（完全圓角） */
   border-radius: 999px;
+  /* border：灰色邊框 */
   border: 1px solid #dbe3ef;
+  /* text-decoration：移除連結預設的下劃線 */
   text-decoration: none;
+  /* color：灰色文字 */
   color: #556674;
+  /* background：淺灰色背景 */
   background: #f8fafc;
+  /* font-size：13px */
   font-size: 13px;
+  /* font-weight：500（比正常字體稍粗） */
   font-weight: 500;
+  /* transition：背景色、文字色、邊框色在 0.15 秒內平滑變化 */
   transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
+
+/* 導覽連結滑鼠懸停效果 */
 .app-nav-link:hover {
+  /* color：變為藍色 */
   color: #1d4ed8;
+  /* border-color：邊框變為淺藍色 */
   border-color: #bfdbfe;
+  /* background：背景變為淺藍色 */
   background: #eff6ff;
 }
+
+/* 導覽連結已激活狀態（表示當前頁面） */
 .app-nav-link.active {
+  /* color：白色文字（高對比） */
   color: #ffffff;
+  /* border-color：深藍色邊框 */
   border-color: #2563eb;
+  /* background：深藍色背景，讓使用者知道這是目前選中的頁面 */
   background: #2563eb;
 }
 
-/* ===== PrimeVue InputNumber 外觀微調 =====
-   這裡主要調整首頁數字輸入框的寬高、字型和上下箭頭按鈕。 */
+/* ===== PrimeVue InputNumber 元件微調 =====
+   针对数字输入框的样式覆盖。!important 强制应用这些样式。 */
+
+/* 數字輸入框和其內部文字容器 */
 .form-field .p-inputnumber,
 .form-field .p-inputnumber .p-inputtext {
+  /* width: 100%：让输入框占满容器宽度 */
   width: 100%;
+  /* font-family：使用等距字體，便於數字對齊閱讀 */
   font-family: 'IBM Plex Mono', monospace !important;
+  /* color：深色文字 */
   color: #0f1724;
+  /* height：輸入框高度固定 32px */
   height: 32px !important;
+  /* min-height：最小高度也是 32px，防止內容擠壓 */
   min-height: 32px !important;
+  /* font-size：文字大小 15px */
   font-size: 15px !important;
+  /* padding：內邊距（上下2px，左右8px） */
   padding: 2px 8px !important;
+  /* border-radius：7px 圓角 */
   border-radius: 7px !important;
+  /* vertical-align：垂直對齊方式為 middle，確保和其他元素對齊 */
   vertical-align: middle;
 }
+
+/* 數字輸入框的上下箭頭按鈕 */
 .form-field .p-inputnumber .p-inputnumber-button {
+  /* width：按鈕寬度 26px */
   width: 26px !important;
+  /* min-width：最小寬度 26px */
   min-width: 26px !important;
+  /* height：按鈕高度 15px（足夠容納上下箭頭） */
   height: 15px !important;
+  /* font-size：箭頭圖示大小 13px */
   font-size: 13px !important;
+  /* padding：移除預設 padding */
   padding: 0 !important;
+  /* border-radius：按鈕圓角 6px */
   border-radius: 6px !important;
+  /* margin：移除預設邊距 */
   margin: 0 !important;
+  /* display: flex：讓按鈕內容居中 */
   display: flex;
+  /* align-items: center：垂直居中 */
   align-items: center;
+  /* justify-content: center：水平居中 */
   justify-content: center;
+  /* border：淡藍色邊框，透明度 12% */
   border: 1px solid rgba(37,99,235,0.12);
+  /* background：淡藍色背景，透明度 6% */
   background: rgba(37,99,235,0.06);
+  /* box-shadow：無陰影 */
   box-shadow: none;
+  /* transition：背景、陰影、變形在 0.12s 平滑變化 */
   transition: background .12s ease, box-shadow .12s ease, transform .06s ease;
 }
+
+/* 上下按鈕的容器 */
 .form-field .p-inputnumber .p-inputnumber-button-group {
+  /* display: flex：使用 Flex 布局 */
   display: flex;
+  /* flex-direction: column：按鈕垂直排列（上下） */
   flex-direction: column;
+  /* justify-content: center：按鈕在容器中垂直居中 */
   justify-content: center;
+  /* gap：按鈕間距 0px（緊靠） */
   gap: 0px;
+  /* height：容器整體高度 32px */
   height: 32px !important;
 }
+
+/* 按鈕中的箭頭圖標 */
 .form-field .p-inputnumber .p-inputnumber-button .pi {
+  /* font-size：箭頭圖標 12px */
   font-size: 12px !important;
+  /* line-height：行高 1，消除多餘空間 */
   line-height: 1;
+  /* color：藍色箭頭 */
   color: #2563eb;
 }
+
+/* 按鈕滑鼠懸停和焦點狀態 */
 .form-field .p-inputnumber .p-inputnumber-button:hover,
 .form-field .p-inputnumber .p-inputnumber-button:focus {
+  /* background：懸停時背景變深 */
   background: rgba(37,99,235,0.12);
+  /* box-shadow：添加陰影，視覺上突起 */
   box-shadow: 0 6px 18px rgba(37,99,235,0.06);
+  /* transform：向上移動 1px，模擬按下效果 */
   transform: translateY(-1px);
 }
+
+/* 表單欄位容器（包含標籤和輸入框的外層） */
 .form-field {
+  /* display: flex：垂直排列（標籤在上，輸入在下） */
+  display: flex;
+  /* flex-direction: column：讓子元素縱向排列（預設值，但明確指定 */
+  flex-direction: column;
+  /* gap：欄位內元素間距 6px 或 8px（後面覆蓋為 8px） */
   gap: 6px;
 }
+
+/* 表單欄位標籤 */
 .form-field label {
+  /* font-size：標籤文字 12px */
+  font-size: 12px;
+  /* font-weight：500 = 比正常字體稍粗 */
+  font-weight: 500;
+  /* color：灰色標籤 */
+  color: #8892a4;
+  /* text-transform: uppercase：將文字轉為大寫 */
+  text-transform: uppercase;
+  /* letter-spacing：字母間距 0.6px，增加高級感 */
+  letter-spacing: .6px;
+  /* margin-bottom：標籤下方留 2px 空間（舊版本中） */
   margin-bottom: 2px;
 }
 
-/* ===== 頁面標題區 ===== */
+/* ===== 頁面標題區塊 =====
+   位於頁面頂部，包含圖標、大標題和描述文字。 */
 .page-header {
-  display: flex; align-items: center; gap: 14px;
+  /* display: flex：使用 Flex 布局呈現圖標和文字 */
+  display: flex;
+  /* align-items: center：圖標和文字垂直居中 */
+  align-items: center;
+  /* gap：圖標和文字之間的間距 14px */
+  gap: 14px;
+  /* margin-bottom：標題區下方留 32px 空間 */
   margin-bottom: 32px;
 }
-.page-header-icon {
-  width: 46px; height: 46px;
-  background: #2563eb; /* 實心藍底 */
-  box-shadow: 0 6px 18px rgba(37,99,235,0.14);
-  border: 1px solid rgba(37,99,235,0.18); border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; color: #ffffff; flex-shrink: 0;
-}
-.page-header h1 { font-size: 22px; font-weight: 600; letter-spacing: -.3px; }
-.page-header p  { font-size: 13px; color: #8892a4; margin-top: 2px; }
 
-/* ===== PrimeVue 卡片覆寫樣式 =====
-  讓卡片更接近目前這個管理後台的視覺風格。 */
+/* 頁面標題圖標（左側藍色方塊） */
+.page-header-icon {
+  /* width & height：圖標容器 46x46 正方形 */
+  width: 46px;
+  height: 46px;
+  /* background：實心藍色背景 */
+  background: #2563eb;
+  /* box-shadow：添加陰影，視覺突起 0 6px 18px，透明度 14% */
+  box-shadow: 0 6px 18px rgba(37,99,235,0.14);
+  /* border：1px 藍色邊框，透明度 18% */
+  border: 1px solid rgba(37,99,235,0.18);
+  /* border-radius：10px 圓角 */
+  border-radius: 10px;
+  /* display: flex：讓圖標居中 */
+  display: flex;
+  /* align-items & justify-content：讓圖示在容器中心 */
+  align-items: center;
+  justify-content: center;
+  /* font-size：圖標大小 20px */
+  font-size: 20px;
+  /* color：白色圖標 */
+  color: #ffffff;
+  /* flex-shrink: 0：防止圖標被壓縮 */
+  flex-shrink: 0;
+}
+
+/* 頁面大標題（h1） */
+.page-header h1 {
+  /* font-size：22px 大標題 */
+  font-size: 22px;
+  /* font-weight：600 粗體 */
+  font-weight: 600;
+  /* letter-spacing：-0.3px，微調字母間距使標題更緊湊 */
+  letter-spacing: -.3px;
+}
+
+/* 頁面副標題描述文字（p） */
+.page-header p {
+  /* font-size：13px 小於主標題 */
+  font-size: 13px;
+  /* color：淡灰色 */
+  color: #8892a4;
+  /* margin-top：標題下方留 2px 空間 */
+  margin-top: 2px;
+}
+
+/* ===== PrimeVue 卡片樣式覆蓋 =====
+   PrimeVue 卡片（p-card）是第三方元件，這裡覆寫其預設樣式。 */
+
+/* 卡片主容器 */
 .p-card {
+  /* margin-bottom：卡片下方留 20px 空間 */
   margin-bottom: 20px !important;
-  background: #ffffff !important; /* 白卡 */
-  border: 1px solid #e2e7ef !important; /* 淺灰邊 */
+  /* background：白色卡片背景 */
+  background: #ffffff !important;
+  /* border：1px 淺灰邊框 */
+  border: 1px solid #e2e7ef !important;
+  /* border-radius：10px 圓角 */
   border-radius: 10px !important;
+  /* transition：滑鼠懸停時平滑變化（陰影 0.18s，變形 0.12s） */
   transition: box-shadow .18s ease, transform .12s ease;
 }
-.p-card:hover { box-shadow: 0 10px 30px rgba(15,23,42,0.08) !important; transform: translateY(-2px); }
-.p-card .p-card-body   { padding: 24px !important; }
-.p-card .p-card-content { padding: 0 !important; }
+
+/* 卡片滑鼠懸停效果 */
+.p-card:hover {
+  /* box-shadow：添加陰影，視覺上突起 */
+  box-shadow: 0 10px 30px rgba(15,23,42,0.08) !important;
+  /* transform：向上移動 2px */
+  transform: translateY(-2px);
+}
+
+/* 卡片內容區域 */
+.p-card .p-card-body {
+  /* padding：卡片內邊距 24px */
+  padding: 24px !important;
+}
+
+/* 卡片內容容器（通常用於額外嵌套） */
+.p-card .p-card-content {
+  /* padding：移除預設 padding */
+  padding: 0 !important;
+}
+
+/* 設定卡片（自訂卡片樣式） */
 .settings-card {
+  /* margin-bottom：卡片下方留 20px 空間 */
   margin-bottom: 20px;
+  /* background：白色背景 */
   background: #ffffff;
+  /* border：1px 淺灰邊框 */
   border: 1px solid #e2e7ef;
+  /* border-radius：10px 圓角 */
   border-radius: 10px;
+  /* padding：內邊距 24px */
   padding: 24px;
 }
 
+/* 卡片標題區（卡片內的頭部區域） */
 .card-header {
-  display: flex; align-items: center; justify-content: space-between;
+  /* display: flex：左右對齐布局 */
+  display: flex;
+  /* align-items: center：垂直居中 */
+  align-items: center;
+  /* justify-content: space-between：左右兩端對齐，中間空間填充 */
+  justify-content: space-between;
+  /* margin-bottom：標題下方留 20px 空間 */
   margin-bottom: 20px;
 }
+
+/* 卡片標題文字 */
 .card-title {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 15px; font-weight: 600;
+  /* display: flex：讓圖標和文字水平排列 */
+  display: flex;
+  /* align-items: center：圖標和文字垂直居中 */
+  align-items: center;
+  /* gap：圖標和文字之間間距 10px */
+  gap: 10px;
+  /* font-size：標題文字 15px */
+  font-size: 15px;
+  /* font-weight：600 粗體 */
+  font-weight: 600;
 }
-.card-title i { color: #2563eb; }
 
-/* ===== 表單區塊排版 ===== */
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-field { display: flex; flex-direction: column; gap: 8px; }
+/* 卡片標題中的圖標 */
+.card-title i {
+  /* color：藍色圖標 */
+  color: #2563eb;
+}
+
+/* ===== 表單區塊布局 =====
+   表單欄位的網格排列和樣式。 */
+
+/* 表單網格容器（多個欄位的外層） */
+.form-grid {
+  /* display: grid：使用 Grid 布局，比 Flex 更適合多行多列 */
+  display: grid;
+  /* grid-template-columns：2 個相等寬度的欄位（1fr 1fr）*/
+  grid-template-columns: 1fr 1fr;
+  /* gap：欄位之間間距 16px */
+  gap: 16px;
+}
+
+/* 表單欄位容器（Flex 布局版本，前面已定義過） */
+.form-field {
+  /* display: flex：垂直排列子元素 */
+  display: flex;
+  /* flex-direction: column：標籤在上，輸入在下 */
+  flex-direction: column;
+  /* gap：子元素間距 8px */
+  gap: 8px;
+}
+
+/* 表單標籤樣式（再次覆蓋以確保統一） */
 .form-field label {
-  font-size: 12px; font-weight: 500; color: #8892a4;
-  text-transform: uppercase; letter-spacing: .6px;
+  /* font-size：12px */
+  font-size: 12px;
+  /* font-weight：500 */
+  font-weight: 500;
+  /* color：淡灰色 */
+  color: #8892a4;
+  /* text-transform：轉為大寫 */
+  text-transform: uppercase;
+  /* letter-spacing：0.6px 增加間距 */
+  letter-spacing: .6px;
 }
 
-/* ===== Tabulator 樣式覆寫 =====
-  Tabulator 是第三方表格套件，這裡把它的外觀改成和整體頁面一致。 */
+/* ===== Tabulator 表格樣式覆蓋 =====
+   Tabulator 是第三方表格套件，這裡統一樣式。 */
+
+/* 表格主容器 */
 .tabulator {
+  /* background：白色背景 */
   background: #ffffff !important;
+  /* border：1px 淺灰邊框 */
   border: 1px solid #e2e7ef !important;
+  /* border-radius：8px 圓角 */
   border-radius: 8px !important;
+  /* overflow: hidden：隱藏超出邊界的內容（配合圓角） */
   overflow: hidden;
+  /* font-family：統一字體 */
   font-family: 'Outfit', system-ui !important;
+  /* font-size：14px */
   font-size: 14px !important;
 }
+
+/* 表格頭部（行標題） */
 .tabulator .tabulator-header {
+  /* background：淺灰白背景 */
   background: #f8fafc !important;
+  /* border-bottom：下方淺灰邊框 */
   border-bottom: 1px solid #e2e7ef !important;
 }
+
+/* 表格標題欄（每個欄位的標題） */
 .tabulator .tabulator-header .tabulator-col {
+  /* background：透明背景，讓頭部顏色顯示 */
   background: transparent !important;
+  /* border-right：右邊分隔線 */
   border-right: 1px solid #eef3f7 !important;
+  /* color：灰色標題文字 */
   color: #556674 !important;
-  font-size: 11px !important; font-weight: 600 !important;
-  text-transform: uppercase !important; letter-spacing: .6px !important;
+  /* font-size：11px 小字 */
+  font-size: 11px !important;
+  /* font-weight：600 粗體 */
+  font-weight: 600 !important;
+  /* text-transform：大寫 */
+  text-transform: uppercase !important;
+  /* letter-spacing：0.6px 增加專業感 */
+  letter-spacing: .6px !important;
 }
+
+/* 表格列 */
 .tabulator .tabulator-row {
+  /* background：白色背景 */
   background: #ffffff !important;
+  /* border-bottom：下方分隔線 */
   border-bottom: 1px solid #eef3f7 !important;
-  color: #0f1724 !important; transition: background .12s;
+  /* color：深色文字 */
+  color: #0f1724 !important;
+  /* transition：背景在 0.12s 平滑變化 */
+  transition: background .12s;
 }
-.tabulator .tabulator-row:hover { background: rgba(37,99,235,0.03) !important; }
+
+/* 表格列滑鼠懸停效果 */
+.tabulator .tabulator-row:hover {
+  /* background：淺藍色背景，透明度 3% */
+  background: rgba(37,99,235,0.03) !important;
+}
+
+/* 表格儲存格（單個資料格） */
 .tabulator .tabulator-row .tabulator-cell {
+  /* border-right：右邊分隔線 */
   border-right: 1px solid #eef3f7 !important;
+  /* padding：內邊距 10px 14px */
   padding: 10px 14px !important;
+  /* font-family：使用等距字體，便於數據閱讀 */
   font-family: 'IBM Plex Mono', monospace !important;
 }
+
+/* 表格儲存格編輯模式（使用者編輯資料時） */
 .tabulator .tabulator-row .tabulator-cell.tabulator-editing input {
+  /* background：白色編輯框 */
   background: #ffffff !important;
+  /* border：1px 灰色邊框 */
   border: 1px solid #e2e7ef !important;
+  /* border-radius：6px 圓角 */
   border-radius: 6px !important;
-  color: #0f1724 !important; padding: 4px 8px !important;
+  /* color：深色文字 */
+  color: #0f1724 !important;
+  /* padding：內邊距 4px 8px */
+  padding: 4px 8px !important;
+  /* font-family：等距字體 */
   font-family: 'IBM Plex Mono', monospace !important;
+  /* outline：移除預設焦點框 */
   outline: none !important;
+  /* box-shadow：編輯時添加陰影，視覺突起 */
   box-shadow: 0 6px 18px rgba(15,23,42,0.06) !important;
 }
 
-/* 表格列中的刪除按鈕 */
+/* ===== 表格行刪除按鈕 =====
+   表格每列右側的刪除按鈕。 */
 .row-delete-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; border-radius: 6px;
-  background: rgba(220,38,38,.06); color: #dc2626;
-  border: 1px solid rgba(220,38,38,.12); cursor: pointer; font-size: 13px;
+  /* display: inline-flex：讓圖標居中 */
+  display: inline-flex;
+  /* align-items & justify-content：圖標水平垂直居中 */
+  align-items: center;
+  justify-content: center;
+  /* width & height：28x28 正方形按鈕 */
+  width: 28px;
+  height: 28px;
+  /* border-radius：6px 圓角 */
+  border-radius: 6px;
+  /* background：淡紅色背景，透明度 6% */
+  background: rgba(220,38,38,.06);
+  /* color：紅色圖標 */
+  color: #dc2626;
+  /* border：1px 紅色邊框，透明度 12% */
+  border: 1px solid rgba(220,38,38,.12);
+  /* cursor: pointer：滑鼠變手指，標示可點擊 */
+  cursor: pointer;
+  /* font-size：圖標 13px */
+  font-size: 13px;
+  /* transition：背景在 0.15s 平滑變化 */
   transition: background .15s;
 }
-.row-delete-btn:hover { background: #dc2626; color: #fff; }
 
-/* 首頁底部按鈕列與右下角 toast 通知區 */
-.actions-bar { display: flex; gap: 10px; margin-top: 16px; }
+/* 刪除按鈕滑鼠懸停效果 */
+.row-delete-btn:hover {
+  /* background：填滿紅色背景 */
+  background: #dc2626;
+  /* color：白色圖標（高對比） */
+  color: #fff;
+}
+
+/* ===== 底部按鈕列和右下角通知區 =====
+   動作按鈕和 Toast 消息的樣式。 */
+
+/* 按鈕列容器（例如：提交、取消等） */
+.actions-bar {
+  /* display: flex：按鈕水平排列 */
+  display: flex;
+  /* gap：按鈕之間間距 10px */
+  gap: 10px;
+  /* margin-top：與上方元素留 16px 空間 */
+  margin-top: 16px;
+}
+
+/* 儲存按鈕列（通常位於底部） */
 .save-bar {
-  display: flex; justify-content: flex-end; gap: 12px;
-  margin-top: 24px; padding-top: 20px;
+  /* display: flex：按鈕水平排列 */
+  display: flex;
+  /* justify-content: flex-end：按鈕靠右對齐 */
+  justify-content: flex-end;
+  /* gap：按鈕間距 12px */
+  gap: 12px;
+  /* margin-top：與上方內容留 24px 空間 */
+  margin-top: 24px;
+  /* padding-top：上方內邊距 20px */
+  padding-top: 20px;
+  /* border-top：上方分隔線 */
   border-top: 1px solid #eef3f7;
 }
+
+/* Toast 通知容器（位於右下角的通知堆疊） */
 .toast-stack {
+  /* position: fixed：固定定位，不隨頁面滾動 */
   position: fixed;
+  /* right & bottom：距離視窗右邊 20px，下方 20px */
   right: 20px;
   bottom: 20px;
+  /* z-index：疊層優先級 2000，最上層 */
   z-index: 2000;
+  /* display: flex：通知垂直排列 */
   display: flex;
+  /* flex-direction: column：從上到下排列 */
   flex-direction: column;
+  /* gap：通知之間間距 12px */
   gap: 12px;
+  /* width：寬度在 360px 和螢幕寬度之間取較小值 */
   width: min(360px, calc(100vw - 32px));
 }
+
+/* 單一 Toast 通知 */
 .app-toast {
+  /* display: flex：水平排列（文字在左，關閉按鈕在右） */
   display: flex;
+  /* align-items: center：垂直居中 */
   align-items: center;
+  /* justify-content: space-between：左右兩端對齐，中間空間填充 */
   justify-content: space-between;
+  /* gap：內容直間間距 12px */
   gap: 12px;
+  /* padding：內邊距 12px 16px */
   padding: 12px 16px;
+  /* border-radius：10px 圓角 */
   border-radius: 10px;
+  /* border：1px 淺灰邊框 */
   border: 1px solid #eef3f7;
+  /* background：白色背景 */
   background: #ffffff;
+  /* box-shadow：陰影，視覺突起 */
   box-shadow: 0 12px 30px rgba(15,23,42,0.06);
 }
-.app-toast-success { border-left: 6px solid #16a34a; }
-.app-toast-error   { border-left: 6px solid #dc2626; }
+
+/* Toast 通知 - 成功狀態（左邊綠色標記） */
+.app-toast-success {
+  /* border-left：左邊 6px 綠色邊框，標示成功 */
+  border-left: 6px solid #16a34a;
+}
+
+/* Toast 通知 - 錯誤狀態（左邊紅色標記） */
+.app-toast-error {
+  /* border-left：左邊 6px 紅色邊框，標示錯誤 */
+  border-left: 6px solid #dc2626;
+}
+
+/* Toast 通知的文字容器 */
 .app-toast-copy {
+  /* display: flex：讓標題和描述垂直排列 */
   display: flex;
+  /* flex-direction: column：文字由上到下 */
   flex-direction: column;
+  /* gap：標題和描述間距 4px */
   gap: 4px;
+  /* min-width: 0：允許文字換行（Flex 特性） */
   min-width: 0;
 }
+
+/* Toast 通知的標題（粗體） */
 .app-toast-copy strong {
+  /* font-size：14px */
   font-size: 14px;
+  /* font-weight：600 粗體 */
   font-weight: 600;
+  /* color：深色文字 */
   color: #0f1724;
 }
+
+/* Toast 通知的描述文字 */
 .app-toast-copy span {
+  /* font-size：13px */
   font-size: 13px;
+  /* line-height：1.45 行高，增加可讀性 */
   line-height: 1.45;
+  /* color：灰色文字 */
   color: #556674;
+  /* word-break: break-word：長單詞會自動換行 */
   word-break: break-word;
 }
+
+/* Toast 通知的關閉按鈕 */
 .app-toast-close {
+  /* border：無邊框 */
   border: 0;
+  /* background：透明背景 */
   background: transparent;
+  /* color：淡灰色 X 圖標 */
   color: #94a3b8;
+  /* cursor: pointer：滑鼠變手指 */
   cursor: pointer;
+  /* font-size：圖標 14px */
   font-size: 14px;
+  /* padding：小內邊距 2px */
   padding: 2px;
 }
-.app-toast-close:hover { color: #e2e8f0; }
+
+/* Toast 關閉按鈕滑鼠懸停 */
+.app-toast-close:hover {
+  /* color：懸停時變為更淺的灰色 */
+  color: #e2e8f0;
+}
 
 /* ===== 管理頁示意卡片區塊 =====
-  這些樣式主要提供 admin 頁面的統計卡與活動清單。 */
+   用於顯示統計資訊和操作控制面板。 */
+
+/* 管理面板容器（統計卡網格） */
 .admin-panel {
+  /* display: grid：使用網格布局 */
   display: grid;
+  /* grid-template-columns：3 個相等寬度欄位（最小 0，靈活分配） */
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* gap：卡片之間間距 12px */
   gap: 12px;
+  /* margin-top：與上方內容留 14px 空間 */
   margin-top: 14px;
-}
-.admin-stat {
-  border: 1px solid #e2e7ef;
-  border-radius: 10px;
-  background: #fbfdff;
-  padding: 14px;
-}
-.admin-stat span {
-  display: block;
-  color: #64748b;
-  font-size: 12px;
-}
-.admin-stat strong {
-  display: block;
-  margin-top: 6px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 22px;
-  color: #2563eb;
-}
-.admin-feed {
-  margin-top: 14px;
-  border: 1px solid #e2e7ef;
-  border-radius: 10px;
-  overflow: hidden;
-}
-.admin-feed-row {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 12px;
-  padding: 10px 12px;
-  border-bottom: 1px solid #eef3f7;
-  font-size: 13px;
-}
-.admin-feed-row:last-child { border-bottom: 0; }
-.admin-feed-row time {
-  color: #64748b;
-  font-family: 'IBM Plex Mono', monospace;
 }
 
-/* 手機版調整。
-   螢幕較窄時，把橫向排版改為直向，避免內容擠壓。 */
+/* 統計卡片（顯示單個數值） */
+.admin-stat {
+  /* border：1px 淺灰邊框 */
+  border: 1px solid #e2e7ef;
+  /* border-radius：10px 圓角 */
+  border-radius: 10px;
+  /* background：淺藍白背景 */
+  background: #fbfdff;
+  /* padding：內邊距 14px */
+  padding: 14px;
+}
+
+/* 統計卡片中的標籤文字（例如：「已觸發」） */
+.admin-stat span {
+  /* display: block：佔據一整行 */
+  display: block;
+  /* color：灰色文字 */
+  color: #64748b;
+  /* font-size：12px 小字 */
+  font-size: 12px;
+}
+
+/* 統計卡片中的大數字 */
+.admin-stat strong {
+  /* display: block：佔據一整行 */
+  display: block;
+  /* margin-top：與標籤留 6px 空間 */
+  margin-top: 6px;
+  /* font-family：使用等距字體，便於數字對齐 */
+  font-family: 'IBM Plex Mono', monospace;
+  /* font-size：22px 大數字 */
+  font-size: 22px;
+  /* color：藍色，強調重要數據 */
+  color: #2563eb;
+}
+
+/* 管理觸發器卡片（操作控制面板） */
+.admin-trigger {
+  /* margin-top：與上方內容留 16px 空間 */
+  margin-top: 16px;
+  /* border：1px 淺灰邊框 */
+  border: 1px solid #e2e7ef;
+  /* border-radius：10px 圓角 */
+  border-radius: 10px;
+  /* background：淺藍白背景 */
+  background: #fbfdff;
+  /* padding：內邊距 14px */
+  padding: 14px;
+}
+
+/* 管理觸發器面板容器 */
+.admin-trigger-panel {
+  /* margin-top：與上方內容留 16px 空間 */
+  margin-top: 16px;
+}
+
+/* 觸發器面板中的觸發器卡片（重置樣式） */
+.admin-trigger-panel .admin-trigger {
+  /* margin-top：移除預設上方邊距 */
+  margin-top: 0;
+  /* border：移除邊框 */
+  border: 0;
+  /* border-radius：移除圓角 */
+  border-radius: 0;
+  /* background：透明背景 */
+  background: transparent;
+  /* padding：移除內邊距 */
+  padding: 0;
+}
+
+/* 觸發器描述文字 */
+.admin-trigger-desc {
+  /* margin-top：與上方內容留 8px 空間 */
+  margin-top: 8px;
+  /* color：灰色 */
+  color: #64748b;
+  /* font-size：13px */
+  font-size: 13px;
+  /* line-height：1.45 增加可讀性 */
+  line-height: 1.45;
+}
+
+/* ===== 開關切換列 =====
+   自訂開關的容器和樣式。 */
+
+/* 開關列容器（標籤在左，開關在右） */
+.toggle-row {
+  /* margin-top：與上方內容留 12px 空間 */
+  margin-top: 12px;
+  /* display: flex：水平排列標籤和開關 */
+  display: flex;
+  /* align-items: center：垂直居中 */
+  align-items: center;
+  /* justify-content: space-between：左右兩端對齐 */
+  justify-content: space-between;
+  /* gap：標籤和開關間距 12px */
+  gap: 12px;
+  /* padding：內邊距 10px 12px */
+  padding: 10px 12px;
+  /* border：1px 淺灰邊框 */
+  border: 1px solid #e2e7ef;
+  /* border-radius：8px 圓角 */
+  border-radius: 8px;
+  /* background：白色背景 */
+  background: #ffffff;
+  /* color：灰色文字 */
+  color: #334155;
+  /* font-size：13px */
+  font-size: 13px;
+  /* font-weight：500 稍粗 */
+  font-weight: 500;
+}
+
+/* 自訂複選框輸入元素 */
+.toggle-row input[type='checkbox'] {
+  /* width & height：42x22 矩形（切換開關的標準尺寸） */
+  width: 42px;
+  height: 22px;
+  /* appearance: none：隱藏瀏覽器預設複選框 */
+  appearance: none;
+  /* border-radius：999px 製造膠囊形（圓形邊） */
+  border-radius: 999px;
+  /* border：灰色邊框 */
+  border: 1px solid #cbd5e1;
+  /* background：淺灰背景（未選中狀態） */
+  background: #e2e8f0;
+  /* position: relative：用於 ::after 偽元素的相對定位 */
+  position: relative;
+  /* cursor: pointer：滑鼠變手指 */
+  cursor: pointer;
+  /* transition：背景和邊框在 0.15s 平滑變化 */
+  transition: background .15s ease, border-color .15s ease;
+}
+
+/* 複選框的圓形滑塊（使用 ::after 偽元素） */
+.toggle-row input[type='checkbox']::after {
+  /* content：必須有內容才能顯示偽元素 */
+  content: '';
+  /* position: absolute：相對於父元素（input），絕對定位 */
+  position: absolute;
+  /* top & left：距離左上角 1px，留小邊距 */
+  top: 1px;
+  left: 1px;
+  /* width & height：18x18 白色圓球 */
+  width: 18px;
+  height: 18px;
+  /* border-radius：50% 製造圓形 */
+  border-radius: 50%;
+  /* background：白色圓球 */
+  background: #ffffff;
+  /* box-shadow：陰影，讓圓球立體感 */
+  box-shadow: 0 1px 4px rgba(15,23,42,0.2);
+  /* transition：位置在 0.15s 平滑變化 */
+  transition: transform .15s ease;
+}
+
+/* 複選框已勾選時 */
+.toggle-row input[type='checkbox']:checked {
+  /* background：藍色背景 */
+  background: #2563eb;
+  /* border-color：深藍邊框 */
+  border-color: #1d4ed8;
+}
+
+/* 複選框已勾選時的圓形滑塊（移至右邊） */
+.toggle-row input[type='checkbox']:checked::after {
+  /* transform：translateX(20px) 滑塊向右移動 20px */
+  transform: translateX(20px);
+}
+
+/* 複選框禁用狀態（無法操作） */
+.toggle-row input[type='checkbox']:disabled {
+  /* opacity：0.6 透明度降低，視覺上看起來被禁用 */
+  opacity: 0.6;
+  /* cursor：改為 not-allowed，提示使用者無法使用 */
+  cursor: not-allowed;
+}
+
+/* ===== 觸發器狀態指示 =====
+   顯示任務的執行狀態（待命、執行中、成功、失敗）。 */
+
+/* 觸發器狀態標籤（顯示 IDLE、RUNNING 等） */
+.trigger-status {
+  /* display: inline-flex：讓內容（文字）水平排列且居中 */
+  display: inline-flex;
+  /* align-items: center：垂直居中 */
+  align-items: center;
+  /* border-radius：999px 膠囊形 */
+  border-radius: 999px;
+  /* padding：內邊距 4px 9px（上下小，左右稍大） */
+  padding: 4px 9px;
+  /* font-size：11px 小標籤 */
+  font-size: 11px;
+  /* font-weight：600 粗體 */
+  font-weight: 600;
+  /* text-transform：轉為大寫 */
+  text-transform: uppercase;
+  /* letter-spacing：0.5px 增加專業感 */
+  letter-spacing: 0.5px;
+}
+
+/* 觸發器狀態 - 待命（IDLE），灰色 */
+.trigger-status-idle {
+  /* background：淡灰色背景 */
+  background: #e2e8f0;
+  /* color：灰色文字 */
+  color: #334155;
+}
+
+/* 觸發器狀態 - 執行中（RUNNING），藍色 */
+.trigger-status-running {
+  /* background：淺藍色背景 */
+  background: #dbeafe;
+  /* color：深藍色文字 */
+  color: #1d4ed8;
+}
+
+/* 觸發器狀態 - 成功（SUCCESS），綠色 */
+.trigger-status-success {
+  /* background：淺綠色背景 */
+  background: #dcfce7;
+  /* color：深綠色文字 */
+  color: #166534;
+}
+
+/* 觸發器狀態 - 錯誤（ERROR），紅色 */
+.trigger-status-error {
+  /* background：淺紅色背景 */
+  background: #fee2e2;
+  /* color：深紅色文字 */
+  color: #991b1b;
+}
+
+/* ===== 觸發器訊息 =====
+   顯示觸發器的狀態訊息（例如：「上次觸發時間」）。 */
+
+/* 觸發器訊息容器 */
+.admin-trigger-message {
+  /* margin-top：與上方內容留 10px 空間 */
+  margin-top: 10px;
+  /* font-size：13px */
+  font-size: 13px;
+  /* line-height：1.45 增加可讀性 */
+  line-height: 1.45;
+}
+
+/* 訊息 - 待命狀態，灰色 */
+.admin-trigger-message-idle {
+  /* color：灰色 */
+  color: #64748b;
+}
+
+/* 訊息 - 執行中狀態，藍色 */
+.admin-trigger-message-running {
+  /* color：深藍色 */
+  color: #1d4ed8;
+}
+
+/* 訊息 - 成功狀態，綠色 */
+.admin-trigger-message-success {
+  /* color：深綠色 */
+  color: #166534;
+}
+
+/* 訊息 - 錯誤狀態，紅色 */
+.admin-trigger-message-error {
+  /* color：深紅色 */
+  color: #b91c1c;
+}
+
+/* ===== 響應式設計（行動裝置適配） =====
+   當螢幕寬度 640px 或更小時，改變布局為直向排列。 */
 @media (max-width: 640px) {
+  /* 行動版導覽列 */
   .app-nav {
+    /* flex-direction: column：改為直向排列 */
     flex-direction: column;
+    /* align-items: flex-start：改為靠左對齐 */
     align-items: flex-start;
   }
-  .admin-panel { grid-template-columns: 1fr; }
-  .admin-feed-row { grid-template-columns: 1fr; }
+
+  /* 行動版管理面板 */
+  .admin-panel {
+    /* grid-template-columns：改為 1 欄（堆疊顯示） */
+    grid-template-columns: 1fr;
+  }
+
+  /* 行動版開關列 */
+  .toggle-row {
+    /* flex-direction: column：改為垂直排列 */
+    flex-direction: column;
+    /* align-items: flex-start：改為靠左對齐 */
+    align-items: flex-start;
+  }
 }

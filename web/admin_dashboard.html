@@ -13,7 +13,46 @@
        @refresh 代表監聽這個子元件送出的 refresh 事件。 -->
   <admin-overview-panel
     :stats="stats"
-    :activities="activities"
     @refresh="refreshDemoData"
   />
+
+  <section class="settings-card admin-trigger-panel">
+    <div class="card-header" style="margin-bottom: 14px;">
+      <div class="card-title">
+        <i class="pi pi-bolt"></i>
+        <span>Manual Trigger Panel</span>
+      </div>
+      <span class="trigger-status" :class="'trigger-status-' + triggerStatus">
+        {{ triggerStatus }}
+      </span>
+    </div>
+
+    <div class="admin-trigger">
+      <p class="admin-trigger-desc">切換模式後，按鈕會觸發一次示意後端操作（目前為 fake API flow）。</p>
+
+      <label class="toggle-row" for="manual-toggle">
+        <span>Enable Manual Trigger</span>
+        <input
+          id="manual-toggle"
+          type="checkbox"
+          :checked="triggerEnabled"
+          :disabled="triggerBusy"
+          @change="updateTriggerEnabled($event.target.checked)"
+        />
+      </label>
+
+      <div class="actions-bar">
+        <p-button
+          label="Trigger Backend Action"
+          icon="pi pi-play"
+          severity="primary"
+          :loading="triggerBusy"
+          :disabled="triggerBusy"
+          @click="triggerAdminAction"
+        />
+      </div>
+
+      <p class="admin-trigger-message" :class="'admin-trigger-message-' + triggerStatus">{{ triggerMessage }}</p>
+    </div>
+  </section>
 </div>

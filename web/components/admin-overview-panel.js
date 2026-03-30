@@ -11,10 +11,6 @@ export default {
         type: Object,
         required: true,
       },
-      activities: {
-        type: Array,
-        required: true,
-      },
     },
 
     // emits 表示這個元件可能主動對外發出的事件名稱。
@@ -55,15 +51,6 @@ export default {
         <!-- 按下按鈕時，不直接處理邏輯，而是透過 $emit('refresh') 通知父元件 -->
         <div class="actions-bar" style="margin-top:16px;">
           <p-button label="Refresh Demo Data" icon="pi pi-refresh" severity="secondary" outlined @click="$emit('refresh')" />
-        </div>
-
-        <!-- 活動清單。
-             v-for 會把 activities 陣列的每一筆資料渲染成一列。 -->
-        <div class="admin-feed">
-          <div class="admin-feed-row" v-for="item in activities" :key="item.time + item.text">
-            <time>{{ item.time }}</time>
-            <div>{{ item.text }}</div>
-          </div>
         </div>
       </section>
     `,
