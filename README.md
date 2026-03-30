@@ -174,34 +174,6 @@ Error response:
 }
 ```
 
-## Admin Web UI
-
-The frontend in `web/` is Vue-based (loaded via CDN).
-In local development, the same Flask process serves both API and web UI.
-
-The UI calls:
-- `GET /api/config` on page load.
-- `POST /api/config` on save.
-
-In production, serve `web/` and reverse-proxy `/api/*` to Flask backend.
-
-## Frontend dependencies (CDN)
-
-The frontend loads UI libs from CDNs. Current notable versions used in the repository:
-
-- Vue 3 (`vue@3/dist/vue.global.js`)
-- PrimeVue (3.53.0)
-- PrimeIcons
-- Tabulator (6.2.1)
-- Google Fonts: `Outfit`, `IBM Plex Mono`
-
-These are included via `<script>`/`<link>` tags in the HTML templates. No npm build is required for the shipped UI.
-
-## Local dev notes for the Web UI
-
-- When editing frontend code in `web/`, open the page in a browser and hard-refresh (clear cache) to pick up updated CDN bundles.
-- The frontend performs normalization and validation before sending `POST /api/config` (symbols uppercased, numeric conversion, basic range checks).
-
 ## Database file in repository
 
 This repository currently contains a SQLite DB at `backend/config.db` (committed as a binary file). Recommended options:
