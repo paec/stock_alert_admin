@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 from models import get_db
+from execJob import trigger_stock_alert_workflow
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 WEB_DIR = ROOT_DIR / "web"
@@ -19,6 +20,18 @@ DEFAULT_LONG_TERM_DROP_PERCENT = 10.0
 
 def _error_response(message, status_code=400):
     return jsonify({"status": "error", "message": message}), status_code
+
+
+def _parse_bool(value, field_name):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in ("1", "true", "yes", "on"):
+            return True
+        if normalized in ("0", "false", "no", "off"):
+            return False
+    raise ValueError(f"{field_name} must be boolean")
 
 
 def _parse_long_term_drop(data):
@@ -162,6 +175,22 @@ def update_config():
         return jsonify({"status": "ok"})
     except ValueError as e:
         return _error_response(str(e))
+
+
+@app.route("/api/admin/trigger-job", methods=["POST"])
+def trigger_job():
+    data = request.get_json(silent=True) or {}
+
+    try:
+        force_send_report = _parse_bool(
+            data.get("force_send_report", False), "force_send_report"
+        )
+        result = trigger_stock_alert_workflow(force_send_report=force_send_report)
+        return jsonify(result)
+    except ValueError as e:
+        return _error_response(str(e), 400)
+    except RuntimeError as e:
+        return _error_response(str(e), 502)
 
 
 if __name__ == "__main__":

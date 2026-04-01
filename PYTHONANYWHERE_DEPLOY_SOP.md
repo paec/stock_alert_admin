@@ -70,6 +70,20 @@ Next steps on PythonAnywhere Web tab:
 
 ---
 
+### 第 2.5 步：在 PythonAnywhere 設定環境變數
+
+**位置**：側邊欄 → **Web** 分頁 → 向下找 **Environment variables**
+
+點 **Add a new variable**：
+- **Name**: `GH_TOKEN`
+- **Value**: `ghp_xxxxx...` （你的 GitHub Personal Access Token，需要 `actions:read` 和 `actions:write` 權限）
+
+⚠️ 若無 GH_TOKEN，手動觸發工作流程（Manual Trigger Panel）將無法正常運作。
+
+完成後，點 **Save**。
+
+---
+
 ### 第 3 步：編輯 PythonAnywhere 預設的 WSGI 檔
 
 **位置**：側邊欄 → **Web** 分頁
@@ -177,6 +191,36 @@ https://<username>.pythonanywhere.com
 - 標題 "Stock Alert Config"
 - 一個表格顯示規則（MSFT、TSLA、APPL）
 - 上方有編輯框可以修改長期跌幅設定（days、drop_percent）
+
+#### 測試手動觸發工作流程 API
+
+**位置**：仍在管理頁面 (`https://<username>.pythonanywhere.com`)
+
+1. 點進 **Administrator** 分頁
+2. 在 **Manual Trigger Panel** 中，切換 **Enable Manual Trigger** 開關
+3. 點 **Trigger Backend Action** 按鈕
+4. 若出現 "Workflow dispatched successfully" 訊息，表示成功
+
+**或用 curl 測試**：
+
+```bash
+curl -X POST https://<username>.pythonanywhere.com/api/admin/trigger-job \
+  -H "Content-Type: application/json" \
+  -d '{"force_send_report": true}'
+```
+
+**預期回應**：
+
+```json
+{
+  "status": "ok",
+  "message": "Workflow dispatched successfully",
+  "repo": "paec/stock_alert_job",
+  "workflow_file": "check_stock.yml",
+  "branch": "master",
+  "force_send_report": "true"
+}
+```
 
 ---
 

@@ -5,30 +5,6 @@ import AdminOverviewPanel from '../components/admin-overview-panel.js';
 // 這個 view 只需要 ref，因為目前管理頁資料是簡單的響應式値。
 const { ref } = Vue;
 
-// 模擬後端呼叫：enabled 時一定成功，disabled 時 50% 成功；其餘時間走 timeout 錯誤。
-function simulateBackendCall(enabled) {
-  return new Promise((resolve, reject) => {
-    const latency = 700 + Math.floor(Math.random() * 900);
-    setTimeout(() => {
-      if (enabled) {
-        // 有 enable 時一定成功
-        resolve({
-          message: 'Demo backend accepted trigger in enabled mode.'
-        });
-      } else {
-        // 沒有 enable 時 50% 成功，50% 失敗
-        if (Math.random() < 0.5) {
-          resolve({
-            message: 'Demo backend accepted trigger in safe mode.'
-          });
-        } else {
-          reject(new Error('Demo backend timeout (simulated).'));
-        }
-      }
-    }, latency);
-  });
-}
-
 // AdminView 是管理頁本身。
 // 它負責準備資料，並把資料傳給子元件 AdminOverviewPanel 顯示。
 export default {
@@ -70,7 +46,7 @@ export default {
       };
 
       // triggerAdminAction: 第一版先做假串接。
-      // 以 Promise + setTimeout 模擬後端 API 呼叫時間與結果。
+      // 改成真實呼叫後端 API /api/admin/trigger-job。
       const triggerAdminAction = async () => {
         if (triggerBusy.value) {
           return;
@@ -83,9 +59,23 @@ export default {
           : 'Manual trigger request sent (mode: safe)...';
 
         try {
-          const result = await simulateBackendCall(triggerEnabled.value);
+          const response = await fetch('/api/admin/trigger-job', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              force_send_report: triggerEnabled.value,
+            }),
+          });
+
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(result.message || 'Backend request failed.');
+          }
+
           triggerStatus.value = 'success';
-          triggerMessage.value = result.message;
+          triggerMessage.value = result.message || 'Backend trigger success.';
         } catch (error) {
           triggerStatus.value = 'error';
           triggerMessage.value = error?.message || 'Unknown demo error.';
