@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Alert Settings</title>
+
+    <!-- Google Fonts: Outfit (UI) + IBM Plex Mono (monospace) -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+    <!-- PrimeVue Theme (light, blue primary) -->
+    <link rel="stylesheet" href="https://unpkg.com/primevue@3.53.0/resources/themes/lara-light-blue/theme.css" />
+    <link rel="stylesheet" href="https://unpkg.com/primevue@3.53.0/resources/primevue.min.css" />
+
+    <!-- PrimeIcons -->
+    <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css" />
+
+    <!-- App styles -->
+    <link rel="stylesheet" href="./styles.css" />
+
+    <!-- Tabulator (simple/white theme for bright UI) -->
+    <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator_simple.min.css" />
+    <script src="https://unpkg.com/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
+
+        <!-- Vue 3 核心函式庫。
+          整個前端頁面的反應式資料、元件、模板渲染都靠它。 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+        <!-- Vue Router。
+          用來做單頁應用程式(SPA)的前端路由切換。 -->
+    <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script>
+
+    <!-- PrimeVue all-in-one bundle -->
+    <script src="https://unpkg.com/primevue@3.53.0/core/core.min.js"></script>
+    <script src="https://unpkg.com/primevue@3.53.0/toastservice/toastservice.min.js"></script>
+    <script src="https://unpkg.com/primevue@3.53.0/tag/tag.min.js"></script>
+  </head>
+  <body>
+    <!-- 這個 div 是 Vue app 最終掛載的位置。
+         Vue 啟動後，所有畫面都會由 app.js 接管。 -->
+    <div id="app"></div>
+
+    <!-- app.js 以 ES Module 載入，內部會 import views 與 components。 -->
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
