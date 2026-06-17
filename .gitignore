@@ -80,6 +80,7 @@ config.db
 
 # Node
 node_modules/
+web/dist/
 
 # Logs
 *.log
