@@ -13,7 +13,25 @@
          Vue 啟動後，所有畫面都會由 main.js 接管。 -->
     <div id="app"></div>
 
-    <!-- Vite 會在這裡注入 main.js -->
+    <!-- 
+      【Vite 開發模式 (Dev Mode) 與 正式生產模式 (Production Mode) 的行為與運作差異說明】
+
+      1. 開發模式 (Dev Mode - 執行 `npm run dev`):
+         - Vite 會啟動一個高效能的本地開發伺服器 (預設通訊埠為 5173，參見 vite.config.js 中的 server.port)。
+         - 瀏覽器會以原生 ES 模組 (ES Modules, 即 type="module") 的方式直接請求下方的 `/src/main.js`。
+         - 當瀏覽器請求特定檔案時，Vite 開發伺服器會「即時 (On-the-fly) 編譯」該檔案 (例如將 Vue 單檔元件 .vue 編譯成瀏覽器看得懂的 JS)，並直接回傳給瀏覽器。
+         - 優點：不需要在啟動時打包整個專案，啟動速度極快；且支援極速的熱重載 (Hot Module Replacement, HMR)，修改程式碼後僅需重新編譯該模組並立即在瀏覽器中更新。
+
+      2. 正式生產模式 (Production Mode - 執行 `npm run build`):
+         - Vite 會在底層調用 Rollup 打包工具，對整套應用程式進行靜態分析與打包。
+         - 它會將所有的程式碼、第三方依賴、樣式表 (CSS) 等進行優化處理，包括程式碼壓縮 (Minification)、搖樹優化 (Tree-shaking) 以移除未使用的程式碼、以及代碼分割 (Code-splitting) 產生多個區塊 (Chunks)。
+         - 打包完成後，會將最終優化後的靜態資源檔案輸出至 `web/dist/` 目錄 (參見 vite.config.js 中的 build.outDir)。
+         - 在這個過程中，Vite 會自動重寫此 `index.html` 檔案：
+           * 原本的 `<script type="module" src="/src/main.js"></script>` 會被自動替換成指向打包後、檔名帶有雜湊值 (Hash) 的 JS 檔案 (例如 `/assets/index-[hash].js`)。
+           * 同時會自動在 `<head>` 中注入打包後的 CSS 樣式表連結 (`<link rel="stylesheet" ...>`) 等。
+         - 正式環境中不需要運行 Vite 開發伺服器，只需將 `dist` 資料夾中的靜態檔案部署至任何網頁伺服器 (例如 Flask 後端、Nginx 等) 即可直接提供給使用者瀏覽。
+    -->
+    <!-- Vite 會在這裡注入入口點 main.js (開發環境使用原生 ESM；生產環境建置時會被自動替換為打包後的資產路徑) -->
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
