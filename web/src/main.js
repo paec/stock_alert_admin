@@ -26,7 +26,7 @@ const app = createApp(App);
 app.use(router);
 
 // Install PrimeVue
-app.use(PrimeVue, { ripple: true });
+app.use(PrimeVue, { ripple: true }); // ripple意思: 按鈕點擊時會有水波紋效果
 
 // Register PrimeVue components globally
 app.component('p-button', Button);
