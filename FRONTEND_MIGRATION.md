@@ -15,7 +15,7 @@ web/
 │   ├── services/            # API 呼叫層（configService、adminService）
 │   └── assets/styles.css    # 全域樣式
 ├── dist/                    # build 輸出（自動產生，不需手動編輯）
-├── index.html
+├── index.html             # 前端網站入口；開發時載入 src/main.js，build 後載入打包資源
 ├── package.json
 └── vite.config.js
 
@@ -42,6 +42,8 @@ npm ci
 ---
 
 ## 二、本地開發
+
+開發時使用 Vite 提供前端頁面，修改 `web/src/` 後會即時更新，不需重新打包；Flask 僅提供後端 API。若直接執行 `python backend/app.py`，Flask 只會提供已打包的 `web/dist/`，修改前端後需重新執行 `npm run build`。
 
 **開兩個終端機：**
 
