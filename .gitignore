@@ -80,6 +80,7 @@ config.db
 
 # Node
 node_modules/
+# Note: web/dist/ is committed for deployment convenience
 
 # Logs
 *.log

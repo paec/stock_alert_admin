@@ -2,37 +2,45 @@
 
 本文件聚焦 `web/` 目前的 Vue 前端架構，整理元件層級、狀態、props/emits、主要方法與事件監聽。內容偏向工程結構與資料流，不展開過細的樣式或逐行實作細節。
 
+目前前端採用 Vue 3 + Vite + Single-File Components (SFC)。本文件中的 `src/` 路徑均相對於 `web/`。
+
 ## 快速總覽表
 
 ### 頁面與路由總覽
 
-| 路由 | 頁面名稱 | View 元件 | 模板來源 | 主要責任 | 主要子元件 |
-| --- | --- | --- | --- | --- | --- |
-| `/` | Home / Stock Alert Settings | `HomeView` | `stock_alert_settings.html` | 載入設定、編輯規則、儲存設定 | 無獨立 Vue 子元件，內含 Tabulator 表格 |
-| `/admin` | Admin | `AdminView` | `admin_dashboard.html` | 顯示示意統計、手動觸發操作 | `AdminOverviewPanel` |
-| `/:pathMatch(.*)*` | fallback | router redirect | 無 | 未知路徑導回首頁 | 無 |
+| 路由 | 頁面名稱 | View SFC | 主要責任 | 主要子元件 |
+| --- | --- | --- | --- | --- |
+| `/` | Home / Stock Alert Settings | `src/views/HomeView.vue` | 載入設定、編輯規則、儲存設定 | 無獨立 Vue 子元件，內含 Tabulator 表格 |
+| `/admin` | Admin | `src/views/AdminView.vue` | 顯示示意統計、手動觸發操作 | `AdminOverviewPanel` |
+| `/:pathMatch(.*)*` | fallback | router redirect | 未知路徑導回首頁 | 無 |
 
-### JS / HTML 檔案角色總覽
+### 前端檔案角色總覽
 
 | 檔案 | 類型 | 在架構中的角色 | 直接依賴 | 被誰使用 |
 | --- | --- | --- | --- | --- |
-| `index.html` | HTML shell | 載入 CDN、提供 `#app` 掛載點 | Vue、VueRouter、PrimeVue、Tabulator、`app.js` | 瀏覽器入口頁 |
-| `app.js` | app 入口 | 建立 router、注入模板、註冊全域元件、mount app | `HomeView`、`AdminView`、Vue、VueRouter、PrimeVue | `index.html` |
-| `views/home-view.js` | route view | 首頁狀態與主要業務流程 | Vue Composition API、`/api/config`、Tabulator | `app.js` router |
-| `views/admin-view.js` | route view | 管理頁狀態與示意操作流程 | Vue Composition API、`AdminOverviewPanel` | `app.js` router |
-| `components/admin-overview-panel.js` | Vue component | 顯示管理頁統計資訊、對父層 emit refresh | PrimeVue 全域元件、父層 props | `AdminView` |
-| `stock_alert_settings.html` | HTML template | `HomeView` 畫面模板 | PrimeVue 標籤、Vue 指令 | `app.js` 載入後指派給 `HomeView.template` |
-| `admin_dashboard.html` | HTML template | `AdminView` 畫面模板 | `admin-overview-panel`、PrimeVue 標籤、Vue 指令 | `app.js` 載入後指派給 `AdminView.template` |
-| `styles.css` | CSS | 全域與各區塊樣式 | HTML class 命名 | 全站畫面 |
+| `index.html` | HTML entry | 提供 `#app` 掛載點並載入 `/src/main.js` | Vite、Google Fonts | 瀏覽器入口頁 |
+| `src/main.js` | app 入口 | 建立 app、安裝 router/PrimeVue、註冊全域元件、載入樣式並 mount | `App.vue`、`router/index.js`、PrimeVue、Tabulator CSS | `index.html` |
+| `src/App.vue` | root SFC | 提供共用 navbar 與 `<router-view />` | Vue Router 元件 | `main.js` |
+| `src/router/index.js` | router module | 定義 hash router 與頁面對應 | Vue Router、`HomeView.vue`、`AdminView.vue` | `main.js` |
+| `src/views/HomeView.vue` | route view SFC | 首頁狀態與規則設定流程 | Vue Composition API、`configService`、Tabulator | `router/index.js` |
+| `src/views/AdminView.vue` | route view SFC | 管理頁狀態與手動觸發流程 | Vue Composition API、`adminService`、`AdminOverviewPanel.vue` | `router/index.js` |
+| `src/components/AdminOverviewPanel.vue` | child SFC | 顯示管理頁統計資訊並 emit `refresh` | PrimeVue 全域元件、父層 props | `AdminView.vue` |
+| `src/services/api.js` | API utility | 統一處理 fetch、JSON 與錯誤 | Browser Fetch API | `configService.js`、`adminService.js` |
+| `src/services/configService.js` | service module | 封裝 `/api/config` 讀寫 | `api.js` | `HomeView.vue` |
+| `src/services/adminService.js` | service module | 封裝 `/api/admin/trigger-job` | `api.js` | `AdminView.vue` |
+| `src/assets/styles.css` | CSS | 全域與各區塊樣式 | HTML class 命名 | `main.js` |
+| `package.json` / `vite.config.js` | project config | 定義 npm scripts、依賴、SFC plugin、alias、dev proxy 與 build 輸出 | Vite、`@vitejs/plugin-vue` | npm/Vite |
+
+目前仍保留的 `app.js`、`views/*.js`、`components/*.js`、`stock_alert_settings.html` 與 `admin_dashboard.html` 是遷移前的 legacy 檔案；目前 `index.html` 不再載入它們，也不應視為執行中的入口或模板來源。
 
 ### Vue 元件總覽
 
 | 元件 | 類型 | 定義位置 | 父層 | 子層 | props | emits | 主要責任 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `AppShell` | 根元件 / layout | `app.js` | 無 | `router-view` | 無 | 無 | 顯示 navbar 與路由內容 |
-| `HomeView` | route view | `views/home-view.js` | `router-view` | 無獨立 Vue 子元件 | 無 | 無 | 管理規則與全域跌幅設定 |
-| `AdminView` | route view | `views/admin-view.js` | `router-view` | `AdminOverviewPanel` | 無 | 無 | 管理頁狀態、手動觸發流程 |
-| `AdminOverviewPanel` | 展示型子元件 | `components/admin-overview-panel.js` | `AdminView` | 無 | `stats` | `refresh` | 顯示統計卡並通知父層刷新 |
+| `App` | 根元件 / layout | `src/App.vue` | 無 | `router-view` | 無 | 無 | 顯示 navbar 與路由內容 |
+| `HomeView` | route view SFC | `src/views/HomeView.vue` | `router-view` | 無獨立 Vue 子元件 | 無 | 無 | 管理規則與全域跌幅設定 |
+| `AdminView` | route view SFC | `src/views/AdminView.vue` | `router-view` | `AdminOverviewPanel` | 無 | 無 | 管理頁狀態、手動觸發流程 |
+| `AdminOverviewPanel` | 展示型子元件 SFC | `src/components/AdminOverviewPanel.vue` | `AdminView` | 無 | `stats` | `refresh` | 顯示統計卡並通知父層刷新 |
 
 ### 主要狀態總覽
 
@@ -61,53 +69,64 @@
 
 | Router 層 | 對應元件 | 導頁來源 | 畫面結果 |
 | --- | --- | --- | --- |
-| `createRouter(...)` | 全站 router instance | `app.js` | 控制整個 SPA 頁面切換 |
+| `createRouter(...)` | 全站 router instance | `src/router/index.js` | 控制整個 SPA 頁面切換 |
 | `router-link to="/"` | `HomeView` | Navbar | 顯示設定頁 |
 | `router-link to="/admin"` | `AdminView` | Navbar | 顯示管理頁 |
-| `router-view` | 依目前路由決定 | `AppShell` | 承載目前頁面元件 |
+| `router-view` | 依目前路由決定 | `App` | 承載目前頁面元件 |
 
 ### 關聯速查
 
 | A | 關聯 | B |
 | --- | --- | --- |
-| `index.html` | 載入 | `app.js` |
-| `app.js` | 建立 | `AppShell` + router |
-| `app.js` | 載入模板後指派給 | `HomeView.template`、`AdminView.template` |
+| `index.html` | 載入 | `src/main.js` |
+| `src/main.js` | 建立與掛載 | `App.vue` + router + PrimeVue |
+| `src/router/index.js` | 對應 | `HomeView.vue`、`AdminView.vue` |
+| `App.vue` | 透過 | `router-view` 承載目前頁面 |
 | `HomeView` | 掛載第三方表格 | Tabulator |
-| `HomeView` | 呼叫 API | `/api/config` |
+| `HomeView` | 呼叫 | `configService` -> `api.js` -> `/api/config` |
+| `AdminView` | 呼叫 | `adminService` -> `api.js` -> `/api/admin/trigger-job` |
 | `AdminView` | 傳 `stats` props 給 | `AdminOverviewPanel` |
 | `AdminOverviewPanel` | emit `refresh` 給 | `AdminView` |
-| `AppShell` | 透過 `router-view` 顯示 | `HomeView` 或 `AdminView` |
+| `App` | 透過 `router-view` 顯示 | `HomeView` 或 `AdminView` |
 
 ## 1. 技術與執行模式
 
-- 框架核心: Vue 3 (CDN 全域版)
+- 框架核心: Vue 3 Single-File Components (SFC)
+- 建置工具: Vite
 - 路由: Vue Router 4 (`hash` mode)
-- UI 套件: PrimeVue (CDN，全域註冊元件)
-- 表格: Tabulator (直接操作 DOM)
-- 模板載入: `app.js` 啟動時 `fetch` 兩份 HTML 模板，再指派給對應 view
+- UI 套件: PrimeVue，透過 npm 安裝，並在 `src/main.js` 全域註冊目前使用的元件
+- 表格: Tabulator，透過 npm module import，仍採直接操作 DOM 的掛載模式
+- API 層: `src/services/` 封裝 Fetch API，View 不直接處理請求細節
 
-重點特性:
+執行流程:
 
-- 不是 `.vue` SFC 專案，沒有 bundler/build step。
-- `index.html` 只提供 shell 與 script 載入，真實頁面模板來自:
-  - `stock_alert_settings.html`
-  - `admin_dashboard.html`
+- `index.html` 提供 `#app` 掛載點並載入 `/src/main.js`。
+- `src/main.js` 建立 Vue app，安裝 router 與 PrimeVue，載入全域樣式後掛載 `App.vue`。
+- `App.vue` 提供共用導覽列與 `<router-view />`；頁面元件由 `src/router/index.js` 對應。
+- 開發時執行 `npm run dev`，Vite 提供 HMR，並將 `/api/*` 代理至 Flask (`http://127.0.0.1:5000`)。
+- 正式環境執行 `npm run build`，Vite 將編譯後的靜態資源輸出至 `web/dist/`，由 Flask 提供服務。
+
+目前不再透過 `fetch` 動態載入 HTML template；每個 View 的 template 與 script 集中在 `.vue` SFC，樣式則由 SFC 或 `src/assets/styles.css` 提供。
 
 ## 2. 目錄與角色分工
 
-- `index.html`: SPA 容器 (`#app`) 與 CDN 依賴載入
-- `app.js`: 應用入口，負責路由、模板注入、全域元件註冊、掛載 app
-- `views/home-view.js`: 首頁設定頁核心邏輯（規則編輯、載入/儲存）
-- `views/admin-view.js`: 管理頁邏輯（示意統計 + 手動觸發流程）
-- `components/admin-overview-panel.js`: 管理頁可重用子元件
-- `stock_alert_settings.html`: HomeView 模板
-- `admin_dashboard.html`: AdminView 模板
-- `styles.css`: 全域與元件視覺樣式
+- `index.html`: Vite HTML entry，提供 SPA 容器 (`#app`) 並載入 `src/main.js`
+- `src/main.js`: 應用入口，負責建立 app、安裝 router/PrimeVue、註冊全域元件、載入樣式與掛載 app
+- `src/App.vue`: 根元件，負責共用導覽列與 `<router-view />`
+- `src/router/index.js`: hash router 與路由對應
+- `src/views/HomeView.vue`: 首頁設定頁核心邏輯（規則編輯、載入/儲存）
+- `src/views/AdminView.vue`: 管理頁邏輯（示意統計 + 手動觸發流程）
+- `src/components/AdminOverviewPanel.vue`: 管理頁可重用展示型子元件
+- `src/services/api.js`: 共用 API request、JSON 解析與錯誤處理
+- `src/services/configService.js`: 封裝 `/api/config` 讀寫
+- `src/services/adminService.js`: 封裝 `/api/admin/trigger-job`
+- `src/assets/styles.css`: 全域與各區塊視覺樣式
+- `package.json`: npm scripts 與前端依賴
+- `vite.config.js`: Vue plugin、`@` alias、開發代理與 build 輸出設定
 
 ## 3. 路由與頁面對應
 
-定義於 `app.js`:
+定義於 `src/router/index.js`:
 
 - `/` -> `HomeView`
 - `/admin` -> `AdminView`
@@ -119,24 +138,24 @@ Router 使用 `createWebHashHistory()`，URL 形式為 `/#/`、`/#/admin`，避�
 
 ```text
 index.html (#app)
-└─ AppShell (in app.js)
+└─ App (src/App.vue)
    ├─ Navbar
    │  ├─ router-link -> /
    │  └─ router-link -> /admin
    └─ <router-view>
-      ├─ HomeView (views/home-view.js)
+      ├─ HomeView (src/views/HomeView.vue)
       │  ├─ Global Long-Term Drop form
       │  ├─ Rules section (Tabulator mount point: ref tableEl)
       │  ├─ Action bar (Add / Reset / Save)
       │  └─ Toast stack
-      └─ AdminView (views/admin-view.js)
-         ├─ AdminOverviewPanel (components/admin-overview-panel.js)
+      └─ AdminView (src/views/AdminView.vue)
+         ├─ AdminOverviewPanel (src/components/AdminOverviewPanel.vue)
          └─ Manual Trigger Panel
 ```
 
 ## 5. 每個元件的狀態、Props、事件、方法
 
-## 5.1 AppShell (`app.js`)
+## 5.1 App (`src/App.vue`)
 
 性質:
 
@@ -152,7 +171,7 @@ index.html (#app)
 
 - 使用 `router-link` 導頁，無自訂 methods
 
-## 5.2 HomeView (`views/home-view.js`)
+## 5.2 HomeView (`src/views/HomeView.vue`)
 
 API 風格:
 
@@ -220,7 +239,7 @@ Props / Emits:
 - Vue 狀態與 Tabulator 不是同一套 reactivity，需要 `syncFromTable()` 手動同步。
 - `loadConfig()` 在資料寫入後使用 `nextTick()`，確保 DOM ready 再初始化或更新 Tabulator。
 
-## 5.3 AdminView (`views/admin-view.js`)
+## 5.3 AdminView (`src/views/AdminView.vue`)
 
 API 風格:
 
@@ -265,7 +284,7 @@ Props / Emits:
 - `@click="triggerAdminAction"`
 - `@refresh="refreshDemoData"` (來自子元件 emit)
 
-## 5.4 AdminOverviewPanel (`components/admin-overview-panel.js`)
+## 5.4 AdminOverviewPanel (`src/components/AdminOverviewPanel.vue`)
 
 API 風格:
 
@@ -312,18 +331,24 @@ Admin 頁:
 
 ## 7. 外部依賴與 Vue 整合注意點
 
-- PrimeVue 元件由 `app.component(...)` 全域註冊，目前包含:
+- PrimeVue 元件由 `src/main.js` 的 `app.component(...)` 全域註冊，目前包含:
   - `p-card`
   - `p-button`
   - `p-inputnumber`
   - `p-tag`
+- 依賴透過 `package.json` 管理；執行 `npm ci` 安裝依賴，執行 `npm run build` 產生 `dist/`。
+- `@` alias 指向 `src/`，因此元件與服務可使用 `@/components/...`、`@/services/...` 等 import 路徑。
 - Tabulator 為非 Vue 生態元件，採 DOM 掛載模式，需注意:
   - 初始化時機 (`nextTick` + `ref`)
   - 狀態同步責任由程式手動維護 (`syncFromTable`)
+- API 呼叫集中在 service layer:
+  - `configService.js` -> `api.js` -> `/api/config`
+  - `adminService.js` -> `api.js` -> `/api/admin/trigger-job`
 
 ## 8. 現行架構摘要
 
-- 架構屬於「輕量 SPA + 模板外載」模式。
-- View 層 (`HomeView`, `AdminView`) 負責頁面狀態與流程。
-- `AdminOverviewPanel` 已切成可重用子元件，具備基本父子通訊模式（props + emits）。
-- Home 頁最關鍵的複雜度來自 Vue 與 Tabulator 的雙資料來源同步。
+- 架構屬於「Vue 3 SFC + Vite + hash router」模式。
+- `App.vue` 是根 layout；View 層 (`HomeView`, `AdminView`) 負責頁面狀態與流程。
+- `AdminOverviewPanel.vue` 是可重用展示型子元件，具備基本父子通訊模式（props + emits）。
+- API 呼叫由 `src/services/` 集中管理，避免 View 直接散落 fetch 邏輯。
+- Home 頁最關鍵的複雜度仍來自 Vue 與 Tabulator 的雙資料來源同步。

@@ -8,9 +8,13 @@ from execJob import trigger_stock_alert_workflow
 ROOT_DIR = Path(__file__).resolve().parent.parent
 WEB_DIR = ROOT_DIR / "web"
 
+# Prefer built frontend (web/dist/) if it exists, otherwise fall back to web/
+DIST_DIR = WEB_DIR / "dist"
+STATIC_FOLDER = str(DIST_DIR) if DIST_DIR.exists() else str(WEB_DIR)
+
 app = Flask(
     __name__,
-    static_folder=str(WEB_DIR),
+    static_folder=STATIC_FOLDER,
     static_url_path="",
 )
 
