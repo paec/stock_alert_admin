@@ -264,9 +264,9 @@ export default {
           },
         ],
 
-        // 任一儲存格編輯完成後，同步 Tabulator 內資料到 Vue 狀態
-        cellEdited: () => syncFromTable(),
       });
+
+      table.on('cellEdited', syncFromTable);
     };
 
     // addRule: 新增一筆預設規則。
