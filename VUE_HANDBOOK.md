@@ -1,5 +1,5 @@
 # Vue 3 學習手冊
-### 以 StockAlert Admin 專案為例，從零開始理解 Vue
+### 以 StockAlert Admin 專案（Vue 3 + Vite + SFC）為例，從零開始理解 Vue
 
 ---
 
@@ -65,19 +65,28 @@ Vue 的核心概念是：**你只管資料，畫面自己跟著更新**。
 
 ### 本專案如何載入 Vue？
 
-📌 **`index.html`**
+📌 **`web/index.html`**
 
 ```html
-<!-- 透過 CDN 一行引入 Vue 3 -->
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<div id="app"></div>
+
+<!-- Vite 開發時載入入口模組，build 後會改成打包後的資產路徑 -->
+<script type="module" src="/src/main.js"></script>
 ```
 
-這種方式叫做 **CDN 全域版**，不需要安裝 Node.js、不需要 build step，  
-引入後 `Vue` 這個物件就直接掛在瀏覽器的全域 `window` 上，任何 JS 都能使用。
+本專案使用 **npm + Vite** 管理 Vue。Vue、Vue Router、PrimeVue 與 Tabulator 都列在
+`web/package.json`，由 `web/src/main.js` 透過 ES module `import` 載入。Vite 會在開發時即時編譯
+`.vue` 單檔元件，正式建置時則把程式碼與樣式打包到 `web/dist/`。
 
-💡 **延伸知識**：正式的大型專案通常會用 `npm install vue` 搭配 Vite 建置工具，  
-並把每個元件寫在獨立的 `.vue` 檔案（Single File Component）。  
-本專案選擇 CDN 版的原因是：**不需要任何安裝，直接開瀏覽器就能跑**，適合快速原型或小型管理後台。
+啟動前端開發環境需要先在 `web/` 安裝依賴並啟動 Vite：
+
+```bash
+npm ci
+npm run dev
+```
+
+💡 **延伸知識**：CDN 全域版仍適合快速示範或不需要建置工具的頁面；本專案改用 Vite + SFC，
+是為了讓元件、路由、服務與樣式可以透過模組化方式組織，並在部署前產生最佳化的靜態資源。
 
 ---
 
@@ -91,34 +100,39 @@ Vue 應用程式的啟動需要兩個動作：
 
 ### 本專案的實作
 
-📌 **`index.html`**
+📌 **`web/index.html`**
 
 ```html
 <body>
   <!-- 這個 div 是 Vue 接管的範圍 -->
   <div id="app"></div>
 
-  <!-- 用 type="module" 讓 JS 可以使用 import/export -->
-  <script type="module" src="app.js"></script>
+  <!-- Vite 入口；開發時由 Vite 處理 import，build 後會注入打包資產 -->
+  <script type="module" src="/src/main.js"></script>
 </body>
 ```
 
-📌 **`app.js`**（簡化版）
+📌 **`web/src/main.js`**（簡化版）
 
 ```js
-const { createApp } = Vue;  // 從全域 Vue 物件取出 createApp
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
 
-const app = createApp(AppShell);  // 用根元件 AppShell 建立應用程式
-app.use(router);                   // 安裝路由器
-app.mount('#app');                  // 掛到 id="app" 的 div
+const app = createApp(App);  // 用 App.vue 建立應用程式
+app.use(router);              // 安裝路由器
+app.mount('#app');            // 掛到 id="app" 的 div
 ```
+
+實際的 `main.js` 還會安裝 PrimeVue、註冊共用的 PrimeVue 元件，並載入 PrimeVue、Tabulator
+與應用程式的 CSS。`import` 的模組由 Vite 負責解析，不需要依賴瀏覽器上的全域 `Vue` 物件。
 
 ### 視覺化理解
 
 ```
 index.html
   └── <div id="app">        ← Vue 接管這裡
-        └── AppShell        ← 根元件（整個 app 的外框）
+    └── App.vue         ← 根元件（整個 app 的外框）
               └── <router-view>   ← 根據網址顯示不同頁面
                     ├── HomeView   (網址 /#/)
                     └── AdminView  (網址 /#/admin)
@@ -155,39 +169,60 @@ const MyComponent = {
 
 ### 本專案的元件組成
 
-📌 本專案共有 4 個元件：
+📌 本專案目前有 4 個主要 Vue 元件：
 
 | 元件名稱 | 定義在哪 | 是完整頁面還是小塊元件 |
 |---|---|---|
-| `AppShell` | `app.js` 內直接定義 | 外框（layout），不是完整頁 |
-| `HomeView` | `views/home-view.js` | 完整頁面 |
-| `AdminView` | `views/admin-view.js` | 完整頁面 |
-| `AdminOverviewPanel` | `components/admin-overview-panel.js` | 小塊子元件 |
+| `App` | `web/src/App.vue` | 外框（layout），不是完整頁 |
+| `HomeView` | `web/src/views/HomeView.vue` | 完整頁面 |
+| `AdminView` | `web/src/views/AdminView.vue` | 完整頁面 |
+| `AdminOverviewPanel` | `web/src/components/AdminOverviewPanel.vue` | 小塊子元件 |
 
-📌 **`AppShell`** 定義範例（來自 `app.js`）：
+📌 **`App`** 定義範例（來自 `web/src/App.vue`）：
 
-```js
-const AppShell = {
-  template: `
-    <div>
-      <nav class="app-nav">
-        <!-- 導覽列 ... -->
-      </nav>
-      <router-view />   <!-- 頁面內容放這裡 -->
-    </div>
-  `,
+```vue
+<template>
+  <div>
+    <nav class="app-nav">
+      <!-- 導覽列 ... -->
+    </nav>
+    <router-view />   <!-- 頁面內容放這裡 -->
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'App',
 };
+</script>
 ```
 
-📌 **`HomeView`** 的模板是從外部 HTML 檔案載入的（`stock_alert_settings.html`）：
+📌 **`HomeView`** 的 template 與 script 放在同一個 SFC（`web/src/views/HomeView.vue`）：
 
-```js
-// app.js 啟動時
-HomeView.template = homeTemplate;  // 把 fetch 回來的 HTML 字串直接指定給它
+```vue
+<template>
+  <!-- HomeView 的畫面模板 -->
+  <section class="settings-card">
+    <p-inputnumber v-model="longTermDrop.days" :min="1" />
+    <p-button label="Save Settings" @click="save" />
+  </section>
+</template>
+
+<script>
+import { ref, reactive, onMounted, nextTick } from 'vue';
+
+export default {
+  name: 'HomeView',
+  setup() {
+    // 狀態與方法...
+    return { ref, reactive, onMounted, nextTick };
+  },
+};
+</script>
 ```
 
-💡 **延伸知識**：把 template 放在獨立的 `.html` 檔案，是本專案為了**讓 HTML 和 JS 好讀、好維護**而採用的巧妙做法。  
-這在 `.vue` SFC（Single File Component）專案中不需要這樣做，因為 `.vue` 檔本身就把 template/script/style 寫在一起。
+💡 **延伸知識**：SFC（Single File Component）把 `<template>`、`<script>` 和可選的 `<style>`
+放在同一個 `.vue` 檔案中。Vite 的 Vue plugin 會在建置時把 SFC 編譯成瀏覽器可執行的模組。
 
 ---
 
@@ -204,10 +239,11 @@ HomeView.template = homeTemplate;  // 把 fetch 回來的 HTML 字串直接指�
 
 ### 本專案的 setup() 結構
 
-📌 **`views/home-view.js`**：
+📌 **`web/src/views/HomeView.vue`** 的 `<script>` 區塊：
 
 ```js
-const { ref, reactive, onMounted, nextTick } = Vue;
+import { ref, reactive, onMounted, nextTick } from 'vue';
+import { getConfig, saveConfig } from '@/services/configService';
 
 export default {
   setup() {
@@ -256,7 +292,7 @@ setup() {
 
 💡 **延伸知識**：Vue 3 後來還新增了 `<script setup>` 語法（只在 `.vue` SFC 中可用），  
 讓你不需要手動 `return`，所有在 `setup` 裡宣告的東西都自動暴露給 template。  
-本專案因為是 CDN 模式，用的是舊式 `setup()` 函式寫法。
+本專案目前使用一般 `<script>` 搭配 `setup()` 函式；這是元件 API 的選擇，與是否使用 CDN 無關。
 
 ---
 
@@ -284,7 +320,7 @@ count.value = 5;            // 改成 5，畫面自動更新
 // {{ count }}   ← 直接寫，不用寫 count.value
 ```
 
-📌 **本專案範例**（`home-view.js`）：
+📌 **本專案範例**（`web/src/views/HomeView.vue`）：
 
 ```js
 const rules = ref([]);          // 一開始是空陣列
@@ -304,7 +340,7 @@ form.name = 'Alice';  // 直接改屬性，不需要 .value
 form.age = 25;
 ```
 
-📌 **本專案範例**（`home-view.js`）：
+📌 **本專案範例**（`web/src/views/HomeView.vue`）：
 
 ```js
 const longTermDrop = reactive({ days: 60, drop_percent: 10 });
@@ -333,7 +369,7 @@ reactive → longTermDrop  （整個表單物件，欄位多、直接綁定方�
 
 ### 什麼時候「不該」用響應式？
 
-📌 **`home-view.js`** 中的 Tabulator 實例：
+📌 **`web/src/views/HomeView.vue`** 中的 Tabulator 實例：
 
 ```js
 let table = null;  // 普通變數，不是 ref
@@ -342,6 +378,35 @@ let table = null;  // 普通變數，不是 ref
 因為 Tabulator 是第三方套件直接操作 DOM，它的狀態不需要被 Vue 追蹤，  
 而且把大型物件放入 Vue 的響應式系統可能會有效能問題。  
 類似的情況還有純粹的計數器 `let notificationId = 0`。
+
+### DOM 元素的 ref：取得 template 裡的 DOM
+
+`ref()` 除了可以包裝一般資料，也可以用來取得 template 裡某個 DOM 元素的引用。
+這種用法稱為 **template ref**。宣告時通常先放入 `null`，因為元件尚未掛載時，DOM 元素還不存在：
+
+```js
+const tableEl = ref(null);
+```
+
+接著在 template 的元素上使用相同名稱的 `ref` 屬性：
+
+```html
+<div ref="tableEl" id="rules-table"></div>
+```
+
+元件掛載完成後，Vue 會把這個 `<div>` 的 DOM 元素放進 `tableEl.value`，
+因此可以將它交給需要直接操作 DOM 的第三方套件，例如 Tabulator：
+
+```js
+onMounted(() => {
+  const table = new Tabulator(tableEl.value, {
+    // Tabulator 設定...
+  });
+});
+```
+
+在元件掛載前，`tableEl.value` 仍然是 `null`，所以必須等 `onMounted` 之後才能使用。
+這和第 8 章介紹的生命週期及 `nextTick()` 有關。
 
 ---
 
@@ -358,14 +423,14 @@ let table = null;  // 普通變數，不是 ref
 <strong>{{ stats.activeUsers }}</strong>
 ```
 
-📌 **本專案範例**（`stock_alert_settings.html`）：
+📌 **本專案範例**（`web/src/views/HomeView.vue` 的 `<template>`）：
 
 ```html
 <!-- rules 是 ref([])，顯示陣列長度 -->
 <p-tag :value="rules.length + ' RULES'" severity="secondary" :rounded="true" />
 ```
 
-📌 **`admin-overview-panel.js`**（template 字串內）：
+📌 **`web/src/components/AdminOverviewPanel.vue`** 的 `<template>`：
 
 ```html
 <strong>{{ stats.activeUsers }}</strong>
@@ -375,23 +440,31 @@ let table = null;  // 普通變數，不是 ref
 
 ### 6.2 v-model — 雙向綁定
 
-`v-model` 是「資料 ↔ 輸入框」的雙向連結。  
+`v-model` 是讓父元件與子元件雙向同步資料。
+最典型例子 是「資料 ↔ 輸入框」的雙向連結。
 - 使用者改輸入框 → JS 變數跟著改  
 - JS 變數改 → 輸入框顯示跟著改
 
+**原生HTML例子**
 ```html
 <input v-model="searchText" />
 <!-- 等價於 -->
 <input :value="searchText" @input="searchText = $event.target.value" />
 ```
 
-📌 **本專案範例**（`stock_alert_settings.html`）：
+**Vue 子元件例子**
+
+Vue 元件的 `v-model` 對父元件而言，不是直接監聽子元件的原生 `input` 事件，
+而是透過 `modelValue` prop 接收資料，再透過 `update:modelValue` 事件通知父元件更新：
+(詳細解釋可看下方 9-10章節與總結)
 
 ```html
-<!-- v-model 把 longTermDrop.days 綁定到這個數字輸入框 -->
-<p-inputnumber
-  v-model="longTermDrop.days"
-  :min="1" :use-grouping="false"
+<!-- 父元件：使用 v-model 綁定子元件 -->
+<custom-counter v-model="count" />
+<!-- 等價於（Vue 會自動展開，使用預設的 prop 與事件名稱） -->
+<custom-counter
+  :model-value="count"
+  @update:model-value="count = $event"
 />
 ```
 
@@ -408,7 +481,7 @@ let table = null;  // 普通變數，不是 ref
 `:key` 是每一筆的**唯一識別碼**，幫助 Vue 在資料更新時知道哪筆是哪筆，  
 避免 DOM 錯位，這個屬性是必填的好習慣。
 
-📌 **本專案範例**（`stock_alert_settings.html`）：
+📌 **本專案範例**（`web/src/views/HomeView.vue` 的 `<template>`）：
 
 ```html
 <!-- notifications 是 ref([])，有幾筆 toast 就渲染幾個 div -->
@@ -437,7 +510,7 @@ let table = null;  // 普通變數，不是 ref
 <!-- 如果 item.severity 是 'error'，最終渲染成 class="app-toast-error" -->
 ```
 
-📌 **本專案範例**（`admin_dashboard.html`）：
+📌 **本專案範例**（`web/src/views/AdminView.vue` 的 `<template>`）：
 
 ```html
 <!-- :stats 把 JS 的 stats ref 傳給子元件 -->
@@ -475,7 +548,7 @@ let table = null;  // 普通變數，不是 ref
 <div :class="['base-class', extraClass]"></div>
 ```
 
-📌 **本專案範例**（`admin_dashboard.html`）：
+📌 **本專案範例**（`web/src/views/AdminView.vue` 的 `<template>`）：
 
 ```html
 <span class="trigger-status" :class="'trigger-status-' + triggerStatus">
@@ -507,7 +580,7 @@ let table = null;  // 普通變數，不是 ref
 
 ### 本專案的事件範例
 
-📌 **呼叫函式**（`stock_alert_settings.html`）：
+📌 **呼叫函式**（`web/src/views/HomeView.vue` 的 `<template>`）：
 
 ```html
 <!-- 按下時呼叫 addRule()，addRule 是 setup() return 出來的 -->
@@ -520,7 +593,7 @@ let table = null;  // 普通變數，不是 ref
 <p-button @click="save" label="Save Settings" />
 ```
 
-📌 **傳遞事件物件**（`admin_dashboard.html`）：
+📌 **傳遞事件物件**（`web/src/views/AdminView.vue` 的 `<template>`）：
 
 ```html
 <!-- $event 是原生 DOM 事件物件，$event.target.checked 是 checkbox 的勾選狀態 -->
@@ -530,7 +603,7 @@ let table = null;  // 普通變數，不是 ref
 />
 ```
 
-📌 **子元件 emit 事件**（`admin_dashboard.html`）：
+📌 **子元件 emit 事件**（`web/src/views/AdminView.vue` 的 `<template>`）：
 
 ```html
 <!-- 監聽子元件 admin-overview-panel 發出的 refresh 事件 -->
@@ -555,7 +628,7 @@ Vue 元件從「被建立」到「被銷毀」有一個生命週期，
 `onMounted` 的回調函式會在**元件的 DOM 真正渲染到畫面上之後**執行。  
 這是進行「需要 DOM 才能運作」的操作（例如初始化第三方套件、去後端撈資料）的正確時機。
 
-📌 **本專案範例**（`home-view.js`）：
+📌 **本專案範例**（`web/src/views/HomeView.vue`）：
 
 ```js
 onMounted(loadConfig);
@@ -578,11 +651,11 @@ Vue 的 DOM 更新是**非同步**的。
 
 `nextTick()` 讓你等待這個更新批次完成之後再執行後續邏輯。
 
-📌 **本專案範例**（`home-view.js`）：
+📌 **本專案範例**（`web/src/views/HomeView.vue`）：
 
 ```js
 const loadConfig = async () => {
-  const data = await fetch('/api/config').then(r => r.json());
+  const data = await getConfig();
   rules.value = normalizeRules(data.rules);  // 改了響應式變數
 
   // 此時 DOM 還沒更新！Tabulator 的資料還是舊的
@@ -616,7 +689,7 @@ Vue 也是把多個狀態變更「堆在一起」，等一個時間點「一次�
 📌 **父元件 `AdminView`** 透過 `:stats` 傳資料給子元件：
 
 ```html
-<!-- admin_dashboard.html -->
+<!-- web/src/views/AdminView.vue -->
 <admin-overview-panel :stats="stats" @refresh="refreshDemoData" />
 ```
 
@@ -626,7 +699,7 @@ Vue 也是把多個狀態變更「堆在一起」，等一個時間點「一次�
 📌 **子元件 `AdminOverviewPanel`** 宣告它需要接收什麼 props：
 
 ```js
-// components/admin-overview-panel.js
+// web/src/components/AdminOverviewPanel.vue 的 <script> 區塊
 export default {
   props: {
     stats: {
@@ -672,22 +745,24 @@ export default {
 
 📌 **子元件 `AdminOverviewPanel`** 宣告可能發出的事件，並在按鈕上發出：
 
-```js
-// components/admin-overview-panel.js
+```vue
+<!-- web/src/components/AdminOverviewPanel.vue -->
+<script>
 export default {
   emits: ['refresh'],  // 宣告這個元件可能發出 refresh 事件
-
-  template: `
-    <!-- $emit('refresh') 發出事件，不帶任何資料 -->
-    <p-button @click="$emit('refresh')" label="Refresh Demo Data" />
-  `,
 };
+</script>
+
+<template>
+  <!-- $emit('refresh') 發出事件，不帶任何資料 -->
+  <p-button @click="$emit('refresh')" label="Refresh Demo Data" />
+</template>
 ```
 
 📌 **父元件 `AdminView`** 監聽並回應：
 
 ```html
-<!-- admin_dashboard.html -->
+<!-- web/src/views/AdminView.vue -->
 <!-- 當子元件 emit 'refresh'，父元件執行 refreshDemoData() -->
 <admin-overview-panel :stats="stats" @refresh="refreshDemoData" />
 ```
@@ -720,6 +795,78 @@ const handleSelect = (payload) => {
 
 本專案的 `refresh` 事件不需要帶資料，所以直接 `$emit('refresh')` 即可。
 
+## 總結: v-model 與 Props 與 Emits 的關係
+
+`v-model` 在HTML原生元素和 Vue 元件上的底層方式不同，但目的都是讓資料與畫面同步。
+
+**HTML原生元素**
+
+Vue 會把資料綁到 DOM property，並監聽瀏覽器的原生事件；HTML原生元素本身不認識 Vue 的 props 或 emit。
+
+```html
+<input v-model="name" />
+<!-- 概念上等同於 -->
+<input :value="name" @input="name = $event.target.value" />
+```
+
+可以把它理解成：
+
+```js
+inputElement.value = name;
+
+inputElement.addEventListener('input', (event) => {
+  name = event.target.value;
+});
+```
+
+- `:value` → 把 `name` 寫入 `input.value`
+- `@input` → 註冊 `input` 原生事件監聽器
+
+**Vue 元件**
+
+Vue 元件則由 Vue 在中間轉換成 **prop + emit**。子元件作者必須定義接收資料的 prop，並在適當時機 emit 事件通知父元件：
+
+```html
+<!-- 父元件 -->
+<custom-counter v-model="count" />
+<!-- Vue 會轉成 -->
+<custom-counter
+  :model-value="count"
+  @update:model-value="count = $event"
+/>
+```
+
+子元件（Vue 3）可以這樣接收與通知：
+
+```vue
+<script>
+export default {
+  props: {
+    modelValue: {
+      type: Number,
+      required: true,
+    },
+  },
+  emits: ['update:modelValue'],
+  methods: {
+    increase() {
+      this.$emit('update:modelValue', this.modelValue + 1);
+    },
+  },
+};
+</script>
+
+<template>
+  <span>{{ modelValue }}</span>
+  <button @click="increase">+1</button>
+</template>
+```
+
+資料流向是：**子元件 emit 通知父元件 → 父元件更新 `count` → Vue 傳入新的 `modelValue` prop → 子元件顯示更新**。  
+  - 在子元件內，props 是唯讀的，不能直接修改。若子元件需要改變資料，應透過 emit 通知父元件，由父元件更新自己的狀態，再透過 props 傳回子元件。
+
+所以底層機制不同，但最後都達到「輸入值和資料同步」的效果。
+
 ---
 
 ## 11. Vue Router：前端頁面切換
@@ -737,7 +884,8 @@ Router（路由器）解決的問題是：**在不重新整理頁面的情況下
 本專案使用 **Hash 模式**：網址長得像 `http://localhost/#/admin`。
 
 ```js
-const { createWebHashHistory } = VueRouter;
+import { createRouter, createWebHashHistory } from 'vue-router';
+
 const router = createRouter({
   history: createWebHashHistory(),  // hash 模式
   routes,
@@ -754,9 +902,12 @@ Hash（`#` 之後的部分）的變化**不會讓瀏覽器向伺服器發請求*
 
 ### 路由表（routes）
 
-📌 **`app.js`**：
+📌 **`web/src/router/index.js`**：
 
 ```js
+import HomeView from '@/views/HomeView.vue';
+import AdminView from '@/views/AdminView.vue';
+
 const routes = [
   { path: '/',       component: HomeView },   // 首頁
   { path: '/admin',  component: AdminView },   // 管理頁
@@ -770,7 +921,7 @@ const routes = [
 
 ### router-link：不重整頁面的導覽
 
-📌 **`app.js` AppShell template**：
+📌 **`web/src/App.vue` 的 `<template>`**：
 
 ```html
 <!-- 不要用 <a href="/admin">，那會整頁重整 -->
@@ -785,7 +936,7 @@ const routes = [
 ### router-view：頁面渲染的位置
 
 ```html
-<!-- AppShell template 裡 -->
+<!-- web/src/App.vue 的 <template> 裡 -->
 <router-view />
 ```
 
@@ -813,14 +964,19 @@ const routes = [
 
 ### 本專案的全域元件
 
-📌 **`app.js`**：
+📌 **`web/src/main.js`**：
 
 ```js
-// PrimeVue 提供的 UI 元件，全部手動全域註冊
-app.component('p-card',        primevue.card);
-app.component('p-button',      primevue.button);
-app.component('p-inputnumber', primevue.inputnumber);
-app.component('p-tag',         primevue.tag);
+import Button from 'primevue/button';
+import Card from 'primevue/card';
+import InputNumber from 'primevue/inputnumber';
+import Tag from 'primevue/tag';
+
+// PrimeVue 元件在 app 層級註冊，所有子元件都能使用
+app.component('p-card', Card);
+app.component('p-button', Button);
+app.component('p-inputnumber', InputNumber);
+app.component('p-tag', Tag);
 ```
 
 註冊後，任何 template 裡都可以直接寫：
@@ -833,7 +989,7 @@ app.component('p-tag',         primevue.tag);
 
 ### 為什麼 AdminOverviewPanel 不是全域元件？
 
-📌 **`admin-view.js`**：
+📌 **`web/src/views/AdminView.vue`**：
 
 ```js
 export default {
@@ -885,7 +1041,7 @@ export default {
 };
 ```
 
-📌 **本專案使用 Options API 的地方**：`components/admin-overview-panel.js`  
+📌 **本專案使用 Options API 的地方**：`web/src/components/AdminOverviewPanel.vue` 的 `<script>` 區塊
 （因為這個元件很單純，只有 props 和 emits，用 Options API 結構更清晰）
 
 ### Composition API（組合式）
@@ -905,7 +1061,7 @@ export default {
 };
 ```
 
-📌 **本專案使用 Composition API 的地方**：`home-view.js`、`admin-view.js`
+📌 **本專案使用 Composition API 的地方**：`web/src/views/HomeView.vue`、`web/src/views/AdminView.vue`
 
 ### 選哪個？
 
@@ -927,43 +1083,38 @@ Vue 3 兩種都支援，且可以混用（如本專案）。
 最後用一張完整的資料流圖收尾：
 
 ```
-index.html
-  ├── 載入 CDN：Vue / VueRouter / PrimeVue / Tabulator
-  └── <script type="module" src="app.js">
+web/index.html
+  ├── <div id="app">                              ← Vue 掛載點
+  └── <script type="module" src="/src/main.js">
+    │
+    └── web/src/main.js                       ← Vite 應用程式入口
+      ├── import App from './App.vue'
+      ├── import router from './router'
+      ├── app.use(router)                 ← 安裝路由
+      ├── app.use(PrimeVue)               ← 安裝 UI 套件
+      ├── app.component(...)              ← 註冊 PrimeVue 全域元件
+      └── app.mount('#app')               ← 掛到 DOM
         │
-        ├── fetch('stock_alert_settings.html')  ─┐
-        ├── fetch('admin_dashboard.html')        ─┤ Promise.all 同時載入
-        │                                         ┘
-        ├── HomeView.template = homeTemplate   ← 指派 HTML 字串為 template
-        ├── AdminView.template = adminTemplate
-        │
-        ├── createApp(AppShell)
-        │     app.use(router)          ← 安裝路由
-        │     app.use(PrimeVue config)  ← 安裝 UI 套件
-        │     app.component('p-button', ...)  ← 全域元件
-        │     app.mount('#app')        ← 掛到 DOM
-        │
-        └── 畫面開始渲染
-              AppShell（外框）
-                ├── <nav> 導覽列（router-link）
-                └── <router-view>
-                      ├── [網址 /#/] → HomeView
-                      │     ├── setup() 執行，宣告 rules / longTermDrop / notifications...
-                      │     ├── onMounted → loadConfig() → fetch /api/config
-                      │     ├── nextTick → buildTable（Tabulator）
-                      │     └── template: stock_alert_settings.html
-                      │           v-model → longTermDrop.days / drop_percent
-                      │           v-for  → notifications（toast 列表）
-                      │           @click → addRule / loadConfig / save
-                      │
-                      └── [網址 /#/admin] → AdminView
-                            ├── setup() 執行，宣告 stats / triggerEnabled...
-                            ├── components: { AdminOverviewPanel }（局部元件）
-                            └── template: admin_dashboard.html
-                                  :stats → 傳給子元件（Props）
-                                  @refresh → 監聽子元件事件（Emits）
-                                  AdminOverviewPanel
-                                    └── $emit('refresh') → 父執行 refreshDemoData()
+        └── web/src/App.vue           ← 根 layout
+          ├── <nav> 導覽列（router-link）
+          └── <router-view>
+            ├── [網址 /#/] → HomeView.vue
+            │     ├── setup() 宣告 rules / longTermDrop / notifications...
+            │     ├── onMounted → loadConfig()
+            │     ├── getConfig() → api.js → GET /api/config
+            │     ├── nextTick → buildTable（Tabulator）
+            │     └── SFC template
+            │           v-model → longTermDrop.days / drop_percent
+            │           v-for  → notifications（toast 列表）
+            │           @click → addRule / loadConfig / save
+            │
+            └── [網址 /#/admin] → AdminView.vue
+              ├── setup() 宣告 stats / triggerEnabled...
+              ├── AdminOverviewPanel.vue（局部元件）
+              │     ├── props.stats → 子元件資料
+              │     └── $emit('refresh') → refreshDemoData()
+              └── triggerAdminAction()
+                └── adminService.js → api.js → POST /api/admin/trigger-job
 ```
 
 ---
@@ -987,6 +1138,15 @@ index.html
 | 子通知父 | `$emit('event')` + `@event` | `$emit('refresh')` / `@refresh` |
 | 前端頁面切換 | `router-link` + `router-view` | `<router-link to="/admin">` |
 
+### 常見縮寫對照
+
+| 完整寫法 | 縮寫 | 用途 |
+|---|---|---|
+| `v-bind:prop="value"` | `:prop="value"` | 動態綁定屬性 |
+| `v-on:event="handler"` | `@event="handler"` | 監聽事件 |
+| `v-slot:name` | `#name` | 指定 slot |
+| `v-model="value"` | 無單一符號縮寫 | 元件可展開為 `:model-value` + `@update:model-value` |
+
 ---
 
-*本手冊以 StockAlert Admin 專案（Vue 3 CDN + Vue Router 4 + PrimeVue）為基礎撰寫。*
+*本手冊以 StockAlert Admin 專案（Vue 3 + Vite + SFC + Vue Router 4 + PrimeVue）為基礎撰寫。*
