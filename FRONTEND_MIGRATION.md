@@ -37,6 +37,9 @@ python backend/init_db.py
 # 3. 安裝前端依賴
 cd web
 npm ci
+
+# 4. 產生 Flask 正式環境使用的前端檔案
+npm run build
 ```
 
 ---
@@ -65,15 +68,14 @@ npm run dev
 
 ```bash
 cd web
+npm ci
 npm run build
+cd ..
 ```
 
-build 完成後，`web/dist/` 會產生靜態檔案。Flask 啟動時會自動服務 `web/dist/`。
+build 完成後，必須確認 `web/dist/index.html` 存在。這些靜態檔案是 Flask 正式環境唯一需要的前端輸出，並且必須和程式碼一起 commit、push。
 
-**部署到 PythonAnywhere：**
-1. 本地執行 `npm run build`
-2. 把 `web/dist/` 連同程式碼一起 commit 並推上去
-3. PythonAnywhere reload 後即生效
+PythonAnywhere 部署流程、WSGI 設定、環境變數與疑難排解統一記載於 [PYTHONANYWHERE_DEPLOY_SOP.md](PYTHONANYWHERE_DEPLOY_SOP.md)。
 
 ---
 
@@ -81,6 +83,7 @@ build 完成後，`web/dist/` 會產生靜態檔案。Flask 啟動時會自動�
 
 - 編輯前端只改 `web/src/` 裡的 `.vue` 檔，不要動舊的 `web/*.html`
 - API 呼叫統一放在 `web/src/services/` 裡
+- 正式環境部署的是 build 後的 `web/dist/`，不需要在 PythonAnywhere 安裝 Node.js
 - build 後頁面沒更新？重新跑 `npm run build` 再重啟 Flask
 
 ## 五、疑難排解
