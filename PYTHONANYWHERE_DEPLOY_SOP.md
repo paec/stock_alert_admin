@@ -9,10 +9,25 @@
 1. 確保代碼能在本地跑：
    ```bash
    python local_prepare.py
-   python backend/app.py
    ```
 
-2. 測試可訪問：`http://127.0.0.1:5000/api/config`
+  `local_prepare.py` 會安裝 Python 依賴、在 `web/` 執行 `npm ci`、執行 `npm run build`，並確認 `web/dist/index.html` 已產生。
+
+2. 測試可訪問：
+  ```bash
+  python backend/app.py
+  ```
+
+  `http://127.0.0.1:5000/api/config`
+
+3. 將 build 產物提交並推送：
+  ```bash
+  git add web/dist
+  git commit -m "Build frontend"
+  git push
+  ```
+
+  PythonAnywhere 不需要 Node.js 或 npm；正式環境使用的是已提交的 `web/dist/`。
 
 ---
 
@@ -29,6 +44,8 @@ cd ~
 git clone https://github.com/<your-github>/StockAlertAdmin.git
 cd StockAlertAdmin
 ```
+
+`cd` 後的資料夾名稱以實際 clone 結果為準，不一定是 `stock_alert_admin`。後續 WSGI 路徑與指令都必須使用同一個實際資料夾名稱。
 
 確認目錄結構：
 ```bash
@@ -52,6 +69,9 @@ python pythonanywhere_prepare.py
 - ✅ 升級 pip
 - ✅ 安裝 Flask、requests
 - ✅ 初始化 SQLite DB（`backend/config.db`）
+- ✅ 確認本地 build 的 `web/dist/index.html` 已隨 repository 部署
+
+如果看到 `Missing built frontend`，表示 `web/dist/` 沒有被 commit 或沒有成功 pull；請回到本地執行 `npm ci`、`npm run build`，提交並 push 後再執行 `git pull`。
 
 輸出應該是：
 ```
@@ -62,7 +82,8 @@ python pythonanywhere_prepare.py
 Setup complete.
 
 Next steps on PythonAnywhere Web tab:
-1) Edit the WSGI configuration file (in Web tab)
+1) Confirm `web/dist/index.html` exists
+2) Edit the WSGI configuration file (in Web tab)
 ...
 ```
 
@@ -99,10 +120,9 @@ Next steps on PythonAnywhere Web tab:
 import sys
 import os
 
-# 注意：目錄名是小寫 stock_alert_admin（大小寫敏感！）
-# 把 <username> 改成你的帳戶名
-sys.path.insert(0, '/home/<username>/stock_alert_admin')
-sys.path.insert(0, '/home/<username>/stock_alert_admin/backend')
+# 把 <username> 和 <project-directory> 改成實際值，Linux 路徑大小寫敏感
+sys.path.insert(0, '/home/<username>/<project-directory>')
+sys.path.insert(0, '/home/<username>/<project-directory>/backend')
 
 from app import app as application
 
@@ -111,7 +131,7 @@ os.environ.setdefault("STOCKALERT_DEBUG", "false")
 
 ⚠️ **重要**：
 - 把 `<username>` 改成你的實際帳戶名（例如 `paec55612`）
-- 注意小寫 `stock_alert_admin`（不是 `StockAlertAdmin`）
+- `<project-directory>` 必須是 PythonAnywhere 上實際存在的專案資料夾名稱
 
 完成後，點 **Save** 按鈕（編輯器右下角或上方）
 
@@ -201,7 +221,7 @@ https://<username>.pythonanywhere.com
 **位置**：Bash console
 
 ```bash
-cd ~/stock_alert_admin
+cd ~/<project-directory>
 git pull
 ```
 
@@ -218,7 +238,7 @@ git pull
 **位置**：Bash console
 
 ```bash
-sqlite3 ~/stock_alert_admin/backend/config.db
+sqlite3 ~/<project-directory>/backend/config.db
 ```
 
 進到 SQLite 提示符後：
@@ -234,14 +254,14 @@ SELECT * FROM global_config;
 .quit
 ```
 
-#### 重新初始化資料庫
+#### 初始化或補齊資料庫
 
-**⚠️ 警告**：這會刪除所有規則和設定！
+`backend/init_db.py` 使用 `CREATE TABLE IF NOT EXISTS`，不會刪除既有規則；只有空表才會加入範例資料。仍不要在正式環境執行不必要的資料庫操作。
 
 **位置**：Bash console
 
 ```bash
-cd ~/stock_alert_admin
+cd ~/<project-directory>
 python backend/init_db.py
 ```
 
@@ -254,7 +274,7 @@ python backend/init_db.py
 | 症狀 | 原因 | 解決方法 |
 |------|------|---------|
 | ❌ 紅色 X | WSGI 有語法錯誤或 import 問題 | **Web** 分頁 → **Error log** 查看詳細錯誤 |
-| `ModuleNotFoundError: No module named 'models'` | sys.path 路徑不對或目錄名大小寫錯誤 | 重新編輯 WSGI 檔案，確認 `/home/<username>/stock_alert_admin` 路徑正確 |
+| `ModuleNotFoundError: No module named 'models'` | sys.path 路徑不對或目錄名大小寫錯誤 | 重新編輯 WSGI 檔案，確認 `/home/<username>/<project-directory>` 路徑正確 |
 | `ModuleNotFoundError: No module named 'backend'` | 沒有加入根目錄到 sys.path | WSGI 檔案要同時加入根目錄和 backend 目錄的兩行 |
 | 404 Not Found | WSGI 檔案沒被正確加載 | **Web** 分頁檢查 WSGI configuration file 路徑 |
 | 頁面空白（只有白色背景） | Flask 靜態檔案加載失敗或 CSS 加載錯誤 | **Web** 分頁 → **Access log** 查看是否有 404 錯誤（通常不是此問題，Flask 已配置好） |
@@ -274,41 +294,11 @@ python backend/init_db.py
 
 ---
 
-## 資料庫相關
-
-#### 初始化資料庫
-
-已在 `pythonanywhere_prepare.py` 中執行過，應該無需再做。
-
-#### 重新初始化資料庫
-
-如果需要清空再初始化（會丟失所有規則！）：
-
-```bash
-cd ~/stock_alert_admin
-python backend/init_db.py
-```
-
-#### 檢查資料庫狀態
-
-```bash
-sqlite3 ~/stock_alert_admin/backend/config.db
-sqlite> SELECT * FROM stock_config;
-sqlite> SELECT * FROM global_config;
-sqlite> .quit
-```
-
 ---
 
-## 為什麼不能用 prepare 產生 wsgi.py？
+## WSGI 注意事項
 
-`pythonanywhere_prepare.py` 原本設計會產生 `backend/wsgi.py`，但有問題：
-
-1. **在本地 Windows 執行時**，wsgi.py 會嵌入 Windows 路徑（`C:\Python\StockAlertAdmin`）
-2. **上傳到 Linux 的 PythonAnywhere 時**，這個路徑無法使用
-3. **結果**：WSGI 加載失敗
-
-**最佳方案**：直接在 PythonAnywhere 的預設 WSGI 檔編輯，用 Linux 路徑設定。
+本專案不使用 `backend/wsgi.py`。請直接編輯 PythonAnywhere Web 分頁提供的預設 WSGI 檔案，並填入 Linux 專案路徑；不要在 Windows 產生帶有本機路徑的自訂 WSGI 檔案。
 
 ---
 
