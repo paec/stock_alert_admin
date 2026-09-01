@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, make_response, render_template, request, send_from_directory
 
 from models import get_db
 from execJob import trigger_stock_alert_workflow
@@ -23,7 +23,6 @@ app = Flask(
 
 DEFAULT_LONG_TERM_DAYS = 60
 DEFAULT_LONG_TERM_DROP_PERCENT = 10.0
-
 
 def _error_response(message, status_code=400):
     return jsonify({"status": "error", "message": message}), status_code
@@ -219,17 +218,26 @@ def add_more():
     except ValueError as e:
         return _error_response(str(e))
 
+    today = _today()
     conn = get_db()
     try:
         conn.execute(
             "INSERT OR IGNORE INTO add_more_records (symbol, added_date) VALUES (?, ?)",
-            (symbol, _today()),
+            (symbol, today),
         )
         conn.commit()
     finally:
         conn.close()
 
-    return jsonify({"status": "ok"})
+    response = make_response(
+        render_template(
+            "add_more_success.html",
+            today=today,
+            symbol=symbol,
+        )
+    )
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @app.route("/api/add-more/status", methods=["GET"])

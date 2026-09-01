@@ -249,6 +249,9 @@ Success response:
 Calling this endpoint more than once for the same symbol on the same date is
 idempotent.
 
+The endpoint returns a mobile-friendly HTML confirmation page displaying the
+Taiwan date and `您已加碼 AAPL`.
+
 ### GET /api/add-more/status
 
 Returns whether the symbol has been additionally purchased today:
