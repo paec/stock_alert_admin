@@ -1,6 +1,9 @@
-from flask import Flask, jsonify, request, send_from_directory
+from datetime import datetime
 import os
 from pathlib import Path
+from zoneinfo import ZoneInfo
+
+from flask import Flask, jsonify, request, send_from_directory
 
 from models import get_db
 from execJob import trigger_stock_alert_workflow
@@ -92,6 +95,17 @@ def _parse_rules(rules_data):
         raise ValueError("rules must be a list")
 
     return [_parse_rule(item) for item in rules_data]
+
+
+def _parse_symbol(value):
+    symbol = str(value or "").strip().upper()
+    if not symbol:
+        raise ValueError("symbol is required")
+    return symbol
+
+
+def _today():
+    return datetime.now(ZoneInfo("Asia/Taipei")).date().isoformat()
 
 
 @app.route("/")
@@ -195,6 +209,45 @@ def trigger_job():
         return _error_response(str(e), 400)
     except RuntimeError as e:
         return _error_response(str(e), 502)
+
+
+@app.route("/api/add-more", methods=["GET"])
+def add_more():
+    try:
+        symbol = _parse_symbol(request.args.get("symbol"))
+    except ValueError as e:
+        return _error_response(str(e))
+
+    conn = get_db()
+    try:
+        conn.execute(
+            "INSERT OR IGNORE INTO add_more_records (symbol, added_date) VALUES (?, ?)",
+            (symbol, _today()),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    return jsonify({"status": "ok"})
+
+
+@app.route("/api/add-more/status", methods=["GET"])
+def add_more_status():
+    try:
+        symbol = _parse_symbol(request.args.get("symbol"))
+    except ValueError as e:
+        return _error_response(str(e))
+
+    conn = get_db()
+    try:
+        record = conn.execute(
+            "SELECT 1 FROM add_more_records WHERE symbol = ? AND added_date = ?",
+            (symbol, _today()),
+        ).fetchone()
+    finally:
+        conn.close()
+
+    return jsonify(record is not None)
 
 
 if __name__ == "__main__":

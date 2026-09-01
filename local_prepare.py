@@ -45,8 +45,9 @@ def main() -> int:
 
     run([sys.executable, "-m", "pip", "install", "--upgrade", "pip"], "Upgrade pip")
     run([sys.executable, "-m", "pip", "install", "-r", str(REQUIREMENTS)], "Install requirements")
-    run(["npm", "ci"], "Install frontend dependencies", cwd=WEB_DIR)
-    run(["npm", "run", "build"], "Build frontend for Flask", cwd=WEB_DIR)
+    npm_command = "npm.cmd" if sys.platform == "win32" else "npm"
+    run([npm_command, "ci"], "Install frontend dependencies", cwd=WEB_DIR)
+    run([npm_command, "run", "build"], "Build frontend for Flask", cwd=WEB_DIR)
     run([sys.executable, str(INIT_DB_SCRIPT)], "Initialize SQLite database")
 
     if not DIST_INDEX.exists():

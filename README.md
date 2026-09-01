@@ -229,6 +229,37 @@ Error response:
 }
 ```
 
+### GET /api/add-more
+
+Records that a symbol was additionally purchased today. The symbol is passed as
+a query parameter and is normalized to uppercase.
+
+```text
+/api/add-more?symbol=AAPL
+```
+
+Success response:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+Calling this endpoint more than once for the same symbol on the same date is
+idempotent.
+
+### GET /api/add-more/status
+
+Returns whether the symbol has been additionally purchased today:
+
+```text
+/api/add-more/status?symbol=AAPL
+```
+
+The response is a JSON boolean: `true` when today's record exists, otherwise
+`false`.
+
 ## Database file
 
 `backend/config.db` is intentionally excluded from Git by `.gitignore`. Each environment keeps its own SQLite database, so `git pull` does not synchronize or overwrite the local database file.

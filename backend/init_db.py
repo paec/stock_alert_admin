@@ -27,6 +27,16 @@ def init_db():
         """
     )
 
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS add_more_records (
+            symbol TEXT NOT NULL,
+            added_date TEXT NOT NULL,
+            PRIMARY KEY (symbol, added_date)
+        )
+        """
+    )
+
     # Seed example data if table is empty.
      # {"c": 0} 表示 stock_config 表中沒有任何行，{"c": 3} 表示有三行數據。
     count = conn.execute("SELECT COUNT(*) AS c FROM stock_config").fetchone()["c"]
