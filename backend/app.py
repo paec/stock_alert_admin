@@ -212,6 +212,7 @@ def trigger_job():
 
 
 @app.route("/api/add-more", methods=["GET"])
+@app.route("/api/add-more/", methods=["GET"])
 def add_more():
     try:
         symbol = _parse_symbol(request.args.get("symbol"))
@@ -232,6 +233,7 @@ def add_more():
 
 
 @app.route("/api/add-more/status", methods=["GET"])
+@app.route("/api/add-more/status/", methods=["GET"])
 def add_more_status():
     try:
         symbol = _parse_symbol(request.args.get("symbol"))
